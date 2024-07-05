@@ -38,6 +38,8 @@ const Navigation = () => {
           name="Home"
           component={HomeStackNavigator}
           options={{
+            headerTitle: "Feed",
+            headerTitleAlign: "center",
             tabBarIcon: ({ color }) => (
               <FontAwesome name="home" size={26} color={color} />
             ),
