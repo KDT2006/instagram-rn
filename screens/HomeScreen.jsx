@@ -12,6 +12,7 @@ import Post from "../components/Post";
 const HomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar translucent backgroundColor="#ccc1" />
       <FlatList
         data={posts}
         contentContainerStyle={{ gap: 3 }}

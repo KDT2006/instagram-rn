@@ -19,8 +19,21 @@ const HomeStackNavigator = () => {
 
 const NewPostStackNavigator = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="newpost" component={NewPostScreen} />
+    <Stack.Navigator>
+      <Stack.Screen
+        name="newpost"
+        component={NewPostScreen}
+        options={{
+          title: "New Post",
+          headerStyle: {
+            backgroundColor: "#222831",
+          },
+          headerTintColor: "#EEEEEE",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
+      />
     </Stack.Navigator>
   );
 };
@@ -44,7 +57,11 @@ const Navigation = () => {
             headerTitle: "Feed",
             headerTitleAlign: "center",
             tabBarIcon: ({ color, focused }) => (
-              <FontAwesome name="home" size={26} color={focused ? "#EEEEEE" : "#ccc"} />
+              <FontAwesome
+                name="home"
+                size={26}
+                color={focused ? "#EEEEEE" : "#ccc"}
+              />
             ),
           }}
         />
@@ -53,7 +70,11 @@ const Navigation = () => {
           component={NewPostStackNavigator}
           options={{
             tabBarIcon: ({ color, focused }) => (
-              <FontAwesome name="plus-square-o" size={26} color={focused ? "#EEEEEE" : "#ccc"} />
+              <FontAwesome
+                name="plus-square-o"
+                size={26}
+                color={focused ? "#EEEEEE" : "#ccc"}
+              />
             ),
           }}
         />
@@ -62,7 +83,11 @@ const Navigation = () => {
           component={ProfileScreen}
           options={{
             tabBarIcon: ({ color, focused }) => (
-              <FontAwesome name="user" size={26} color={focused ? "#EEEEEE" : "#ccc"} />
+              <FontAwesome
+                name="user"
+                size={26}
+                color={focused ? "#EEEEEE" : "#ccc"}
+              />
             ),
           }}
         />
