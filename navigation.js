@@ -32,6 +32,9 @@ const Navigation = () => {
         screenOptions={{
           tabBarActiveTintColor: "black",
           tabBarShowLabel: false,
+          headerShown: false,
+          tabBarActiveBackgroundColor: "#222831",
+          tabBarInactiveBackgroundColor: "#31363F",
         }}
       >
         <Tab.Screen
@@ -40,8 +43,8 @@ const Navigation = () => {
           options={{
             headerTitle: "Feed",
             headerTitleAlign: "center",
-            tabBarIcon: ({ color }) => (
-              <FontAwesome name="home" size={26} color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <FontAwesome name="home" size={26} color={focused ? "#EEEEEE" : "#ccc"} />
             ),
           }}
         />
@@ -49,8 +52,8 @@ const Navigation = () => {
           name="NewPost"
           component={NewPostStackNavigator}
           options={{
-            tabBarIcon: ({ color }) => (
-              <FontAwesome name="plus-square-o" size={26} color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <FontAwesome name="plus-square-o" size={26} color={focused ? "#EEEEEE" : "#ccc"} />
             ),
           }}
         />
@@ -58,8 +61,8 @@ const Navigation = () => {
           name="Profile"
           component={ProfileScreen}
           options={{
-            tabBarIcon: ({ color }) => (
-              <FontAwesome name="user" size={26} color={color} />
+            tabBarIcon: ({ color, focused }) => (
+              <FontAwesome name="user" size={26} color={focused ? "#EEEEEE" : "#ccc"} />
             ),
           }}
         />

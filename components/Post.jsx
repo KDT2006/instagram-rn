@@ -6,10 +6,10 @@ const Post = ({ post }) => {
   console.log(post);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <View style={{ flex: 1, backgroundColor: "#222831" }}>
       <View style={styles.header}>
         <Image style={styles.avatar} source={{ uri: post.user.image_url }} />
-        <Text>{post.user.username}</Text>
+        <Text style={{color: "#EEEEEE"}}>{post.user.username}</Text>
       </View>
       <Image
         source={{ uri: post.image_url }}
@@ -24,11 +24,11 @@ const Post = ({ post }) => {
         }}
       >
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <AntDesign name="hearto" size={25} color="black" />
-          <Ionicons name="chatbubble-outline" size={25} color="black" />
-          <Feather name="send" size={25} color="black" />
+          <AntDesign name="hearto" size={25} color="#EEEEEE" />
+          <Ionicons name="chatbubble-outline" size={25} color="#EEEEEE" />
+          <Feather name="send" size={25} color="#EEEEEE" />
         </View>
-        <Feather name="bookmark" size={25} color="black" />
+        <Feather name="bookmark" size={25} color="#EEEEEE" />
       </View>
     </View>
   );
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     backgroundColor: "#ccc1",
-    padding: 2,
+    padding: 5,
     alignItems: "center",
     gap: 10,
   },
