@@ -5,6 +5,10 @@ import NewPostScreen from "./screens/NewPostScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { FontAwesome } from "@expo/vector-icons";
 import ProfileScreen from "./screens/ProfileScreen";
+import { useEffect, useState } from "react";
+import AuthScreen from "./screens/AuthScreen";
+import { supabase } from "./supabase";
+import { ActivityIndicator, View } from "react-native";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -38,60 +42,84 @@ const NewPostStackNavigator = () => {
   );
 };
 
+const MainTabsNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarActiveTintColor: "black",
+        tabBarShowLabel: false,
+        headerShown: false,
+        tabBarActiveBackgroundColor: "#222831",
+        tabBarInactiveBackgroundColor: "#31363F",
+      }}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeStackNavigator}
+        options={{
+          headerTitle: "Feed",
+          headerTitleAlign: "center",
+          tabBarIcon: ({ color, focused }) => (
+            <FontAwesome
+              name="home"
+              size={26}
+              color={focused ? "#EEEEEE" : "#ccc"}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="NewPost"
+        component={NewPostStackNavigator}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <FontAwesome
+              name="plus-square-o"
+              size={26}
+              color={focused ? "#EEEEEE" : "#ccc"}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <FontAwesome
+              name="user"
+              size={26}
+              color={focused ? "#EEEEEE" : "#ccc"}
+            />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+
 const Navigation = () => {
+  const [session, setSession] = useState(supabase.auth.getSession());
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{
-          tabBarActiveTintColor: "black",
-          tabBarShowLabel: false,
-          headerShown: false,
-          tabBarActiveBackgroundColor: "#222831",
-          tabBarInactiveBackgroundColor: "#31363F",
-        }}
-      >
-        <Tab.Screen
-          name="Home"
-          component={HomeStackNavigator}
-          options={{
-            headerTitle: "Feed",
-            headerTitleAlign: "center",
-            tabBarIcon: ({ color, focused }) => (
-              <FontAwesome
-                name="home"
-                size={26}
-                color={focused ? "#EEEEEE" : "#ccc"}
-              />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="NewPost"
-          component={NewPostStackNavigator}
-          options={{
-            tabBarIcon: ({ color, focused }) => (
-              <FontAwesome
-                name="plus-square-o"
-                size={26}
-                color={focused ? "#EEEEEE" : "#ccc"}
-              />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{
-            tabBarIcon: ({ color, focused }) => (
-              <FontAwesome
-                name="user"
-                size={26}
-                color={focused ? "#EEEEEE" : "#ccc"}
-              />
-            ),
-          }}
-        />
-      </Tab.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {session && session.user ? (
+          <Stack.Screen name="Main" component={MainTabsNavigator} />
+        ) : (
+          <Stack.Screen name="Auth" component={AuthScreen} />
+        )}
+      </Stack.Navigator>
     </NavigationContainer>
   );
 };

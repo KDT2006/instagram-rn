@@ -3,7 +3,7 @@ import React from "react";
 import { Feather, Ionicons, AntDesign } from "@expo/vector-icons";
 
 const Post = ({ post }) => {
-  console.log(post);
+  // console.log(post);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#222831" }}>

@@ -12,6 +12,7 @@ import {
 import React, { useLayoutEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import * as ImagePicker from "expo-image-picker";
+import { supabase } from "../supabase";
 
 const ProfileScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
@@ -39,7 +40,7 @@ const ProfileScreen = ({ navigation }) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.2,
+      quality: 0.1,
     });
 
     console.log(result);
@@ -91,7 +92,7 @@ const ProfileScreen = ({ navigation }) => {
               Update Profile
             </Text>
           </Pressable>
-          <Pressable style={styles.shareButton}>
+          <Pressable onPress={() => supabase.auth.signOut()} style={styles.shareButton}>
             <Text style={{ color: "#fff", fontWeight: "semibold" }}>
               Sign out
             </Text>
