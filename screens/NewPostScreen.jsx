@@ -1,9 +1,34 @@
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
+import * as ImagePicker from "expo-image-picker";
 
 const NewPostScreen = () => {
   const [caption, setCaption] = useState("");
+  const [image, setImage] = useState(null);
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.2,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -11,11 +36,13 @@ const NewPostScreen = () => {
       {/* Image Picker */}
       <Image
         source={{
-          uri: "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/1.jpg",
+          uri:
+            image ||
+            "https://ipsf.net/wp-content/uploads/2021/12/dummy-image-square.webp",
         }}
         style={styles.image}
       />
-      <Text style={styles.change} onPress={() => {}}>
+      <Text style={styles.change} onPress={pickImage}>
         Change
       </Text>
 
@@ -33,7 +60,7 @@ const NewPostScreen = () => {
 
       {/* Button */}
       <Pressable style={styles.shareButton}>
-        <Text style={{color: "#fff", fontWeight: "semibold"}}>Share</Text>
+        <Text style={{ color: "#fff", fontWeight: "semibold" }}>Share</Text>
       </Pressable>
     </View>
   );
@@ -63,7 +90,7 @@ const styles = StyleSheet.create({
   input: {
     width: "100%",
     padding: 10,
-    color: "#ccc"
+    color: "#ccc",
   },
   shareButton: {
     width: "90%",
@@ -72,6 +99,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#76ABAE",
     borderRadius: 25,
     position: "absolute",
-    bottom: "5%"
-  }
+    bottom: "5%",
+  },
 });
