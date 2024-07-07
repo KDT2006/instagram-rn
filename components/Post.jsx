@@ -3,16 +3,16 @@ import React from "react";
 import { Feather, Ionicons, AntDesign } from "@expo/vector-icons";
 
 const Post = ({ post }) => {
-  // console.log(post);
+  // console.log(post.image);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#222831" }}>
       <View style={styles.header}>
-        <Image style={styles.avatar} source={{ uri: post.user.image_url }} />
+        <Image style={styles.avatar} source={{ uri: post.user.avatar_url }} />
         <Text style={{color: "#EEEEEE"}}>{post.user.username}</Text>
       </View>
       <Image
-        source={{ uri: post.image_url }}
+        source={{ uri: post.image }}
         style={{ width: "100%", aspectRatio: 4 / 3 }}
       />
       <View

@@ -1,9 +1,6 @@
 import {
-  Button,
   Image,
-  KeyboardAvoidingView,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -51,54 +48,57 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   return (
-      <View style={styles.container}>
-        <StatusBar translucent backgroundColor="#222831" style="light" />
-        {/* Image Picker */}
-        <Image
-          source={{
-            uri:
-              image ||
-              "https://ipsf.net/wp-content/uploads/2021/12/dummy-image-square.webp",
-          }}
-          style={styles.image}
-        />
-        <Text style={styles.change} onPress={pickImage}>
-          Change
-        </Text>
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#ccc"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Username"
-          placeholderTextColor="#ccc"
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Website"
-          placeholderTextColor="#ccc"
-          value={website}
-          onChangeText={setWebsite}
-          style={styles.input}
-        />
-        <View style={styles.buttonContainer}>
-          <Pressable style={styles.shareButton}>
-            <Text style={{ color: "#fff", fontWeight: "semibold" }}>
-              Update Profile
-            </Text>
-          </Pressable>
-          <Pressable onPress={() => supabase.auth.signOut()} style={styles.shareButton}>
-            <Text style={{ color: "#fff", fontWeight: "semibold" }}>
-              Sign out
-            </Text>
-          </Pressable>
-        </View>
+    <View style={styles.container}>
+      <StatusBar translucent backgroundColor="#222831" style="light" />
+      {/* Image Picker */}
+      <Image
+        source={{
+          uri:
+            image ||
+            "https://ipsf.net/wp-content/uploads/2021/12/dummy-image-square.webp",
+        }}
+        style={styles.image}
+      />
+      <Text style={styles.change} onPress={pickImage}>
+        Change
+      </Text>
+      <TextInput
+        placeholder="Email"
+        placeholderTextColor="#ccc"
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Username"
+        placeholderTextColor="#ccc"
+        value={username}
+        onChangeText={setUsername}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="Website"
+        placeholderTextColor="#ccc"
+        value={website}
+        onChangeText={setWebsite}
+        style={styles.input}
+      />
+      <View style={styles.buttonContainer}>
+        <Pressable style={styles.shareButton}>
+          <Text style={{ color: "#fff", fontWeight: "semibold" }}>
+            Update Profile
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => supabase.auth.signOut()}
+          style={styles.shareButton}
+        >
+          <Text style={{ color: "#fff", fontWeight: "semibold" }}>
+            Sign out
+          </Text>
+        </Pressable>
       </View>
+    </View>
   );
 };
 
