@@ -30,7 +30,7 @@ const NewPostStackNavigator = () => {
         options={{
           title: "New Post",
           headerStyle: {
-            backgroundColor: "#222831",
+            backgroundColor: "#000",
           },
           headerTintColor: "#EEEEEE",
           headerTitleStyle: {
@@ -50,7 +50,7 @@ const MainTabsNavigator = () => {
         tabBarShowLabel: false,
         headerShown: false,
         tabBarActiveBackgroundColor: "#222831",
-        tabBarInactiveBackgroundColor: "#31363F",
+        tabBarInactiveBackgroundColor: "#000",
       }}
     >
       <Tab.Screen

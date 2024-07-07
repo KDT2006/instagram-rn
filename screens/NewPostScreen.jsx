@@ -101,7 +101,7 @@ const NewPostScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="#222831" style="light" />
+      <StatusBar translucent backgroundColor="#000" style="light" />
       {/* Image Picker */}
       <Image
         source={{
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: 10,
-    backgroundColor: "#31363F",
+    backgroundColor: "#000",
   },
   image: {
     width: "90%",
