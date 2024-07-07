@@ -34,3 +34,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Assets
+assets/InstagramRN.png

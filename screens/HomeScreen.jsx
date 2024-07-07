@@ -1,36 +1,40 @@
 import {
   Alert,
   FlatList,
+  Image,
   Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
+  Text,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import posts from "../assets/data/posts.json";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import Post from "../components/Post";
 import { supabase } from "../supabase";
+import { useNavigation } from "@react-navigation/native";
 
 const HomeScreen = () => {
   const [posts, setPosts] = useState([]);
+  const navigation = useNavigation();
 
   const fetchPosts = async () => {
-    let { data, error } = await supabase.from("posts").select("*, user:profiles(*)");
+    let { data, error } = await supabase
+      .from("posts")
+      .select("*, user:profiles(*)");
     if (error) {
       Alert.alert("Error Occurred", error.message);
     }
-    setPosts(data)
+    setPosts(data);
   };
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  console.log(posts);
-
+  // console.log(posts);
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar translucent backgroundColor="#ccc1" />
+      <StatusBar translucent backgroundColor="#000" />
       <FlatList
         data={posts}
         contentContainerStyle={{ gap: 3 }}
@@ -45,7 +49,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#222831",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : null,
+    // paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : null,
   },
 });
 

@@ -8,7 +8,8 @@ import ProfileScreen from "./screens/ProfileScreen";
 import { useEffect, useState } from "react";
 import AuthScreen from "./screens/AuthScreen";
 import { supabase } from "./supabase";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Image, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -16,7 +17,26 @@ const Tab = createBottomTabNavigator();
 const HomeStackNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="home" component={HomeScreen} />
+      <Stack.Screen
+        name="home"
+        component={HomeScreen}
+        options={{
+          headerShown: true,
+          headerTitle: (props) => (
+            <View style={{ flex: 1 }}>
+              <Text {...props} style={{ color: "#EEEEEE", fontSize: 23 }}>
+                𝓘𝓷𝓼𝓽𝓪𝓰𝓻𝓪𝓶𝓡𝓝
+              </Text>
+            </View>
+          ),
+          headerRight: (props) => (
+            <Ionicons name="chatbubble-outline" size={24} color="#EEEEEE" />
+          ),
+          headerStyle: {
+            backgroundColor: "#000",
+          },
+        }}
+      />
     </Stack.Navigator>
   );
 };
@@ -102,9 +122,11 @@ const Navigation = () => {
   const [session, setSession] = useState(supabase.auth.getSession());
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
 
     return () => {
       authListener.subscription.unsubscribe();

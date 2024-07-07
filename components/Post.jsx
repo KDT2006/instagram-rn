@@ -6,7 +6,7 @@ const Post = ({ post }) => {
   // console.log(post.image);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#222831" }}>
+    <View style={{ flex: 1, backgroundColor: "#000", paddingBottom: 20 }}>
       <View style={styles.header}>
         <Image style={styles.avatar} source={{ uri: post.user.avatar_url }} />
         <Text style={{color: "#EEEEEE"}}>{post.user.username}</Text>
@@ -39,7 +39,7 @@ export default Post;
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    backgroundColor: "#ccc1",
+    backgroundColor: "#141414",
     padding: 5,
     alignItems: "center",
     gap: 10,
