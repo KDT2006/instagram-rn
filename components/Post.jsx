@@ -9,7 +9,7 @@ const Post = ({ post }) => {
     <View style={{ flex: 1, backgroundColor: "#000", paddingBottom: 20 }}>
       <View style={styles.header}>
         <Image style={styles.avatar} source={{ uri: post.user.avatar_url }} />
-        <Text style={{color: "#EEEEEE"}}>{post.user.username}</Text>
+        <Text style={{ color: "#EEEEEE" }}>{post.user.username}</Text>
       </View>
       <Image
         source={{ uri: post.image }}
@@ -30,6 +30,11 @@ const Post = ({ post }) => {
         </View>
         <Feather name="bookmark" size={25} color="#EEEEEE" />
       </View>
+      <View style={{ paddingHorizontal: 10 }}>
+        <Text numberOfLines={1} style={styles.caption}>
+          {post.caption}
+        </Text>
+      </View>
     </View>
   );
 };
@@ -48,5 +53,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 25,
+  },
+  caption: {
+    color: "#ccc9",
   },
 });

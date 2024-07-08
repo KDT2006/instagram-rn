@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Pressable,
@@ -16,12 +17,13 @@ import { decode } from "base64-arraybuffer";
 
 const ProfileScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
-  const [imageName, setImageName] = useState(null);
+  // const [imageName, setImageName] = useState(null);
   const [email, setEmail] = useState(null);
   const [username, setUsername] = useState(null);
   const [name, setName] = useState(null);
   const [website, setWebsite] = useState(null);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -50,7 +52,7 @@ const ProfileScreen = ({ navigation }) => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
-      setImageName(result.assets[0].fileName);
+      // setImageName(result.assets[0].fileName);
       updatePFP(result.assets[0].uri, result.assets[0].fileName);
     }
   };
@@ -86,7 +88,7 @@ const ProfileScreen = ({ navigation }) => {
       }
     };
 
-    fetchDetails();
+    fetchDetails().then(() => setLoading(false));
   }, []);
 
   const updateProfile = async () => {
@@ -187,6 +189,25 @@ const ProfileScreen = ({ navigation }) => {
       console.log(e);
     }
   };
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#222831",
+          justifyContent: "center",
+        }}
+      >
+        <StatusBar translucent backgroundColor="#000" />
+        <ActivityIndicator
+          style={{ alignSelf: "center" }}
+          size={"large"}
+          color={"#EEEEEE"}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

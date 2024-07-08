@@ -1,21 +1,19 @@
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
-  Image,
-  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
-  Text,
+  View,
 } from "react-native";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Post from "../components/Post";
 import { supabase } from "../supabase";
-import { useNavigation } from "@react-navigation/native";
 
 const HomeScreen = () => {
   const [posts, setPosts] = useState([]);
-  const navigation = useNavigation();
+  const [loading, setLoading] = useState(true);
 
   const fetchPosts = async () => {
     let { data, error } = await supabase
@@ -28,8 +26,27 @@ const HomeScreen = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts().then(() => setLoading(false));
   }, []);
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#222831",
+          justifyContent: "center",
+        }}
+      >
+        <StatusBar translucent backgroundColor="#000" />
+        <ActivityIndicator
+          style={{ alignSelf: "center" }}
+          size={"large"}
+          color={"#EEEEEE"}
+        />
+      </View>
+    );
+  }
 
   // console.log(posts);
   return (
