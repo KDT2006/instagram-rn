@@ -11,12 +11,17 @@ import React, { useEffect, useLayoutEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../supabase";
+import * as FileSystem from "expo-file-system";
+import { decode } from "base64-arraybuffer";
 
 const ProfileScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
+  const [imageName, setImageName] = useState(null);
   const [email, setEmail] = useState(null);
   const [username, setUsername] = useState(null);
+  const [name, setName] = useState(null);
   const [website, setWebsite] = useState(null);
+  const [user, setUser] = useState(null);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -45,6 +50,8 @@ const ProfileScreen = ({ navigation }) => {
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
+      setImageName(result.assets[0].fileName);
+      updatePFP(result.assets[0].uri, result.assets[0].fileName);
     }
   };
 
@@ -52,6 +59,7 @@ const ProfileScreen = ({ navigation }) => {
     const fetchDetails = async () => {
       try {
         const user = (await supabase.auth.getUser()).data.user;
+        setUser(user);
         console.log(user.id);
         let { data, error } = await supabase
           .from("profiles")
@@ -63,6 +71,7 @@ const ProfileScreen = ({ navigation }) => {
         } else {
           setEmail(user.email);
           setUsername(data[0].username);
+          setName(data[0].full_name);
           data[0].avatar_url != null ? setImage(data[0].avatar_url) : null;
           data[0].website != null ? setWebsite(data[0].website) : null;
         }
@@ -79,6 +88,105 @@ const ProfileScreen = ({ navigation }) => {
 
     fetchDetails();
   }, []);
+
+  const updateProfile = async () => {
+    try {
+      // unoptimized as we update regardless of data change // TODO: Optimize it
+      // const user = (await supabase.auth.getUser()).data.user;
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ full_name: name, username: username, website: website })
+        .eq("id", user.id)
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      setName(data[0].full_name);
+      setUsername(data[0].username);
+      setWebsite(data[0].website);
+    } catch (e) {
+      Alert.alert(
+        "Error Occurred!",
+        "Unable to update profile detials, please try again."
+      );
+      console.log(e);
+    }
+  };
+
+  const updatePFP = async (img_uri, img_name) => {
+    var exist = false;
+    var pfpName = null;
+    try {
+      // Check if pfp already exists
+      const { data: listData, error: listError } = await supabase.storage
+        .from("avatars")
+        .list(user.id);
+
+      if (listError) {
+        console.log(listError);
+        throw listError;
+      }
+
+      if (listData.length > 0) {
+        exist = true;
+        pfpName = listData[0].name;
+      }
+
+      // Upload new pfp to Supabase storage
+      const base64 = await FileSystem.readAsStringAsync(img_uri, {
+        encoding: "base64",
+      });
+      const filePath = `${user.id}/${img_name}`;
+      const contentType = "image";
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, decode(base64), {
+          contentType,
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Update the URL in profiles table
+      const { data: urlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(uploadData.path);
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: urlData.publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // If pfp exists, delete the old one
+      if (exist) {
+        console.log(pfpName);
+        console.log(`${user.id}/${pfpName}`);
+        const { data: removeData, error: removeError } = await supabase.storage
+          .from("avatars")
+          .remove([`${user.id}/${pfpName}`]);
+
+        if (removeError) {
+          throw removeError;
+        }
+
+        console.log("Remove data:", removeData);
+      }
+    } catch (e) {
+      Alert.alert(
+        "Error Occurred!",
+        "Unable to update profile picture, please try again."
+      );
+      console.log(e);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -101,6 +209,14 @@ const ProfileScreen = ({ navigation }) => {
         value={email}
         onChangeText={setEmail}
         style={styles.input}
+        editable={false}
+      />
+      <TextInput
+        placeholder="Name"
+        placeholderTextColor="#ccc"
+        value={name}
+        onChangeText={setName}
+        style={styles.input}
       />
       <TextInput
         placeholder="Username"
@@ -117,7 +233,12 @@ const ProfileScreen = ({ navigation }) => {
         style={styles.input}
       />
       <View style={styles.buttonContainer}>
-        <Pressable style={styles.shareButton}>
+        <Pressable
+          onPress={() => {
+            updateProfile();
+          }}
+          style={styles.shareButton}
+        >
           <Text style={{ color: "#fff", fontWeight: "semibold" }}>
             Update Profile
           </Text>
