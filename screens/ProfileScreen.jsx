@@ -1,4 +1,5 @@
 import {
+  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -6,7 +7,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../supabase";
@@ -46,6 +47,38 @@ const ProfileScreen = ({ navigation }) => {
       setImage(result.assets[0].uri);
     }
   };
+
+  useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        const user = (await supabase.auth.getUser()).data.user;
+        console.log(user.id);
+        let { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id);
+
+        if (error) {
+          throw error;
+        } else {
+          setEmail(user.email);
+          setUsername(data[0].username);
+          data[0].avatar_url != null ? setImage(data[0].avatar_url) : null;
+          data[0].website != null ? setWebsite(data[0].website) : null;
+        }
+
+        console.log(data);
+      } catch (e) {
+        Alert.alert(
+          "Error Occurred!",
+          "Unable to fetch user data, please try again."
+        );
+        console.log(e);
+      }
+    };
+
+    fetchDetails();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -130,6 +163,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 10,
     marginVertical: 10,
+    color: "#fff",
   },
   shareButton: {
     width: "90%",
