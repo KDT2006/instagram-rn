@@ -1,9 +1,117 @@
-import { Image, StyleSheet, Text, View } from "react-native";
-import React from "react";
-import { Feather, Ionicons, AntDesign } from "@expo/vector-icons";
+import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Feather, Ionicons, AntDesign, FontAwesome } from "@expo/vector-icons";
+import { supabase } from "../supabase";
 
 const Post = ({ post }) => {
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   // console.log(post.image);
+
+  useEffect(() => {
+    const fetchLikeStatus = async () => {
+      const user = (await supabase.auth.getUser()).data.user;
+      const { data, error } = await supabase
+        .from("user_likes")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("post_id", post.id);
+
+      if (error) {
+        console.error("Error fetching like status:", error);
+      } else {
+        setIsLiked(data.length > 0);
+      }
+    };
+
+    const fetchSaveStatus = async () => {
+      const user = (await supabase.auth.getUser()).data.user;
+      const { data, error } = await supabase
+        .from("user_saves")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("post_id", post.id);
+
+      if (error) {
+        console.error("Error fetching save status:", error);
+      } else {
+        setIsSaved(data.length > 0);
+      }
+    };
+
+    fetchLikeStatus();
+    fetchSaveStatus();
+  }, []);
+
+  const handleLike = async () => {
+    const user = (await supabase.auth.getUser()).data.user;
+    const newLikedState = !isLiked;
+    setIsLiked(newLikedState);
+
+    if (newLikedState) {
+      const { data, error } = await supabase
+        .from("user_likes")
+        .insert([{ user_id: user.id, post_id: post.id }])
+        .select();
+
+      if (error) {
+        console.error("Error liking post:", error);
+        Alert.alert("Error Occurred!", "Unable to Like Post. " + error.message);
+        setIsLiked(!newLikedState);
+      } else {
+        console.log("Post liked:", data);
+      }
+    } else {
+      // User unliked the post, remove from user_likes table
+      const { data, error } = await supabase
+        .from("user_likes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("post_id", post.id)
+        .select();
+
+      if (error) {
+        console.error("Error unliking post:", error);
+        Alert.alert(
+          "Error Occurred!",
+          "Unable to Unlike Post. " + error.message
+        );
+        setIsLiked(!newLikedState); // Revert state if there was an error
+      } else {
+        console.log("Post unliked:", data);
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    const user = (await supabase.auth.getUser()).data.user;
+    const newSavedState = !isSaved;
+    setIsSaved(newSavedState);
+
+    if (newSavedState) {
+      const { error } = await supabase
+        .from("user_saves")
+        .insert([{ user_id: user.id, post_id: post.id }]);
+
+      if (error) {
+        console.error("Error saving post:", error);
+      } else {
+        console.log("Post saved");
+      }
+    } else {
+      const { error } = await supabase
+        .from("user_saves")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("post_id", post.id);
+
+      if (error) {
+        console.error("Error unsaving post:", error);
+      } else {
+        console.log("Post unsaved");
+      }
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000", paddingBottom: 20 }}>
@@ -24,11 +132,23 @@ const Post = ({ post }) => {
         }}
       >
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <AntDesign name="hearto" size={25} color="#EEEEEE" />
+          <Pressable onPress={handleLike}>
+            <AntDesign
+              name={isLiked ? "heart" : "hearto"}
+              size={25}
+              color="#EEEEEE"
+            />
+          </Pressable>
           <Ionicons name="chatbubble-outline" size={25} color="#EEEEEE" />
           <Feather name="send" size={25} color="#EEEEEE" />
         </View>
-        <Feather name="bookmark" size={25} color="#EEEEEE" />
+        <Pressable onPress={handleSave}>
+          <FontAwesome
+            name={isSaved ? "bookmark" : "bookmark-o"}
+            size={25}
+            color="#EEEEEE"
+          />
+        </Pressable>
       </View>
       <View style={{ paddingHorizontal: 10 }}>
         <Text numberOfLines={1} style={styles.caption}>
