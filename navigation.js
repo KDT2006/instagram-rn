@@ -8,13 +8,15 @@ import ProfileScreen from "./screens/ProfileScreen";
 import { useEffect, useState } from "react";
 import AuthScreen from "./screens/AuthScreen";
 import { supabase } from "./supabase";
-import { ActivityIndicator, Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import SettingsScreen from "./screens/SettingsScreen";
+import MessageScreen from "./screens/MessageScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const HomeStackNavigator = () => {
+const HomeStackNavigator = ({ navigation }) => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen
@@ -30,11 +32,29 @@ const HomeStackNavigator = () => {
             </View>
           ),
           headerRight: (props) => (
-            <Ionicons name="chatbubble-outline" size={24} color="#EEEEEE" />
+            <Ionicons
+              name="chatbubble-outline"
+              size={24}
+              color="#EEEEEE"
+              onPress={() => navigation.navigate("message")}
+            />
           ),
           headerStyle: {
             backgroundColor: "#000",
           },
+        }}
+      />
+      <Stack.Screen
+        name="message"
+        component={MessageScreen}
+        options={{
+          animation: "slide_from_right",
+          headerShown: true,
+          headerTitle: "Message",
+          headerStyle: {
+            backgroundColor: "#000"
+          },
+          headerTintColor: "#EEEEEE",
         }}
       />
     </Stack.Navigator>
@@ -56,6 +76,26 @@ const NewPostStackNavigator = () => {
           headerTitleStyle: {
             fontWeight: "bold",
           },
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+const ProfileStackNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="profile" component={ProfileScreen} />
+      <Stack.Screen
+        name="settings"
+        component={SettingsScreen}
+        options={{
+          animation: "slide_from_right",
+          headerStyle: {
+            backgroundColor: "#000",
+          },
+          headerTintColor: "#EEEEEE",
+          headerTitle: "Settings",
         }}
       />
     </Stack.Navigator>
@@ -103,7 +143,7 @@ const MainTabsNavigator = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileStackNavigator}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <FontAwesome

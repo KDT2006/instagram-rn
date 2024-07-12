@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../supabase";
 import * as FileSystem from "expo-file-system";
 import { decode } from "base64-arraybuffer";
+import { FontAwesome } from "@expo/vector-icons";
 
 const ProfileScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
@@ -36,6 +37,15 @@ const ProfileScreen = ({ navigation }) => {
         fontWeight: "bold",
       },
       headerShown: true,
+      headerRight: () => (
+        <FontAwesome
+          // style={{ paddingHorizontal: 10 }}
+          name="gear"
+          size={25}
+          color="#EEEEEE"
+          onPress={() => navigation.navigate("settings")}
+        />
+      ),
     });
   }, []);
 
@@ -74,7 +84,11 @@ const ProfileScreen = ({ navigation }) => {
           setEmail(user.email);
           setUsername(data[0].username);
           setName(data[0].full_name);
-          data[0].avatar_url != null ? setImage(data[0].avatar_url) : null;
+          data[0].avatar_url != null
+            ? setImage(data[0].avatar_url)
+            : setImage(
+                "https://w7.pngwing.com/pngs/505/761/png-transparent-login-computer-icons-avatar-icon-monochrome-black-silhouette-thumbnail.png"
+              );
           data[0].website != null ? setWebsite(data[0].website) : null;
         }
 

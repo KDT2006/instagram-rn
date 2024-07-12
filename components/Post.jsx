@@ -116,7 +116,14 @@ const Post = ({ post }) => {
   return (
     <View style={{ flex: 1, backgroundColor: "#000", paddingBottom: 20 }}>
       <View style={styles.header}>
-        <Image style={styles.avatar} source={{ uri: post.user.avatar_url }} />
+        <Image
+          style={styles.avatar}
+          source={{
+            uri:
+              post.user.avatar_url ||
+              "https://w7.pngwing.com/pngs/505/761/png-transparent-login-computer-icons-avatar-icon-monochrome-black-silhouette-thumbnail.png",
+          }}
+        />
         <Text style={{ color: "#EEEEEE" }}>{post.user.username}</Text>
       </View>
       <Image
