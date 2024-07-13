@@ -14,7 +14,7 @@ const Post = ({ post }) => {
       const user = (await supabase.auth.getUser()).data.user;
       const { data, error } = await supabase
         .from("user_likes")
-        .select("*")
+        .select("*", { count: "estimated" })
         .eq("user_id", user.id)
         .eq("post_id", post.id);
 
@@ -55,7 +55,12 @@ const Post = ({ post }) => {
         .insert([{ user_id: user.id, post_id: post.id }])
         .select();
 
-      if (error) {
+      const { error: err2 } = await supabase
+        .from("posts")
+        .update({ likes: post.likes + 1 })
+        .eq("id", post.id);
+
+      if (error || err2) {
         console.error("Error liking post:", error);
         Alert.alert("Error Occurred!", "Unable to Like Post. " + error.message);
         setIsLiked(!newLikedState);
@@ -71,7 +76,13 @@ const Post = ({ post }) => {
         .eq("post_id", post.id)
         .select();
 
-      if (error) {
+      const currentLikes = post.likes > 0 ? post.likes - 1 : 0;
+      const { error: err2 } = await supabase
+        .from("posts")
+        .update({ likes: currentLikes })
+        .eq("id", post.id);
+
+      if (error || err2) {
         console.error("Error unliking post:", error);
         Alert.alert(
           "Error Occurred!",
@@ -157,7 +168,7 @@ const Post = ({ post }) => {
             <AntDesign
               name={isLiked ? "heart" : "hearto"}
               size={25}
-              color="#EEEEEE"
+              color={isLiked ? "red" : "#EEEEEE"}
             />
           </Pressable>
           <Ionicons name="chatbubble-outline" size={25} color="#EEEEEE" />
@@ -172,6 +183,7 @@ const Post = ({ post }) => {
         </Pressable>
       </View>
       <View style={{ paddingHorizontal: 10 }}>
+        <Text style={{ color: "#ccc" }}>{post.likes} likes</Text>
         <Text numberOfLines={1} style={styles.caption}>
           {post.caption}
         </Text>
