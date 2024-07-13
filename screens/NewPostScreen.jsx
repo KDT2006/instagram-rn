@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Pressable,
@@ -18,10 +19,9 @@ import { Video } from "expo-av";
 const NewPostScreen = ({ navigation }) => {
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState(null); // local image uri
-  // const [imageName, setImageName] = useState("");
   const [video, setVideo] = useState(null); // local video uri
-  // const [videoName, setVideoName] = useState("");
   const [uploadImage, setUploadImage] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -84,7 +84,10 @@ const NewPostScreen = ({ navigation }) => {
       Alert.alert("Invalid Media", "Please select an image/video to post", [
         { text: "OK" },
       ]);
+      return;
     }
+
+    setLoading(true);
 
     const response = await uploadMedia();
     console.log(response);
@@ -103,12 +106,14 @@ const NewPostScreen = ({ navigation }) => {
       .insert([
         {
           caption,
-          image: url_data.publicUrl,
+          media: url_data.publicUrl,
           user_id: (await supabase.auth.getSession()).data.session.user.id,
           media_type: uploadImage ? "image" : "video",
         },
       ])
       .select();
+
+    setLoading(false);
 
     if (error) {
       Alert.alert("Error occurred", error.message, [{ text: "OK" }]);
@@ -116,6 +121,16 @@ const NewPostScreen = ({ navigation }) => {
 
     navigation.navigate("Home");
   };
+
+  if (loading) {
+    return (
+      <View
+        style={{ flex: 1, backgroundColor: "#000", justifyContent: "center" }}
+      >
+        <ActivityIndicator size={"large"} color={"#EEEEEE"} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -146,7 +161,7 @@ const NewPostScreen = ({ navigation }) => {
       ) : null}
 
       <Text style={styles.change} onPress={pickImage}>
-        Change
+        Choose Media
       </Text>
 
       {/* TextInput for caption */}

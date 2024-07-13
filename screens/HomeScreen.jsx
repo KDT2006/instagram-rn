@@ -35,7 +35,7 @@ const HomeScreen = () => {
       <View
         style={{
           flex: 1,
-          backgroundColor: "#222831",
+          backgroundColor: "#000",
           justifyContent: "center",
         }}
       >
