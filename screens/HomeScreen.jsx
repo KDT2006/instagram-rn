@@ -18,7 +18,8 @@ const HomeScreen = () => {
   const fetchPosts = async () => {
     let { data, error } = await supabase
       .from("posts")
-      .select("*, user:profiles(*)");
+      .select("*, user:profiles(*)")
+      .order("created_at", { ascending: false });
     if (error) {
       Alert.alert("Error Occurred", error.message);
     }

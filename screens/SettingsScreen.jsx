@@ -41,7 +41,7 @@ const SettingsScreen = () => {
 
   const renderPost = ({ item }) => (
     <View style={styles.post}>
-      <Image source={{ uri: item.image }} style={styles.postImage} />
+      <Image source={{ uri: item.media }} style={styles.postImage} />
       <Text numberOfLines={1} ellipsizeMode="tail" style={styles.postCaption}>
         {item.caption}
       </Text>

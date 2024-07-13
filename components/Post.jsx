@@ -2,11 +2,12 @@ import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Feather, Ionicons, AntDesign, FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../supabase";
+import { Video } from "expo-av";
 
 const Post = ({ post }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  // console.log(post.image);
+  // console.log(post);
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
@@ -126,10 +127,23 @@ const Post = ({ post }) => {
         />
         <Text style={{ color: "#EEEEEE" }}>{post.user.username}</Text>
       </View>
-      <Image
-        source={{ uri: post.image }}
-        style={{ width: "100%", aspectRatio: 4 / 3 }}
-      />
+      {post.media_type === "image" ? (
+        <Image
+          source={{ uri: post.media }}
+          style={{ width: "100%", aspectRatio: 4 / 3 }}
+        />
+      ) : post.media_type === "video" ? (
+        <Video
+          style={{ width: "100%", aspectRatio: 4 / 3 }}
+          source={{
+            uri:
+              post.media ||
+              "https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4",
+          }}
+          useNativeControls
+          resizeMode="contain"
+        />
+      ) : null}
       <View
         style={{
           flexDirection: "row",
