@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "./screens/HomeScreen";
 import NewPostScreen from "./screens/NewPostScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, AntDesign } from "@expo/vector-icons";
 import ProfileScreen from "./screens/ProfileScreen";
 import { useEffect, useState } from "react";
 import AuthScreen from "./screens/AuthScreen";
@@ -11,7 +11,8 @@ import { supabase } from "./supabase";
 import { Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import SettingsScreen from "./screens/SettingsScreen";
-import MessageScreen from "./screens/MessageScreen";
+import ChatScreen from "./screens/ChatScreen";
+import AddChatScreen from "./screens/AddChat";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -36,7 +37,7 @@ const HomeStackNavigator = ({ navigation }) => {
               name="chatbubble-outline"
               size={24}
               color="#EEEEEE"
-              onPress={() => navigation.navigate("message")}
+              onPress={() => navigation.navigate("chat")}
             />
           ),
           headerStyle: {
@@ -45,14 +46,34 @@ const HomeStackNavigator = ({ navigation }) => {
         }}
       />
       <Stack.Screen
-        name="message"
-        component={MessageScreen}
+        name="chat"
+        component={ChatScreen}
         options={{
           animation: "slide_from_right",
           headerShown: true,
-          headerTitle: "Message",
+          headerTitle: "Chat",
           headerStyle: {
-            backgroundColor: "#000"
+            backgroundColor: "#000",
+          },
+          headerTintColor: "#EEEEEE",
+          headerRight: () => (
+            <AntDesign
+              name="plus"
+              onPress={() => navigation.navigate("addChat")}
+              size={24}
+              color="#EEEEEE"
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="addChat"
+        component={AddChatScreen}
+        options={{
+          headerShown: true,
+          headerTitle: "Add Chat",
+          headerStyle: {
+            backgroundColor: "#000",
           },
           headerTintColor: "#EEEEEE",
         }}
