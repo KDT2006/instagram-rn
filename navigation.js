@@ -11,8 +11,9 @@ import { supabase } from "./supabase";
 import { Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import SettingsScreen from "./screens/SettingsScreen";
-import ChatScreen from "./screens/ChatScreen";
 import AddChatScreen from "./screens/AddChat";
+import ChatsScreen from "./screens/ChatsScreen";
+import MessageScreen from "./screens/MessageScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -47,7 +48,7 @@ const HomeStackNavigator = ({ navigation }) => {
       />
       <Stack.Screen
         name="chat"
-        component={ChatScreen}
+        component={ChatsScreen}
         options={{
           animation: "slide_from_right",
           headerShown: true,
@@ -64,6 +65,17 @@ const HomeStackNavigator = ({ navigation }) => {
               color="#EEEEEE"
             />
           ),
+        }}
+      />
+      <Stack.Screen
+        name="message"
+        component={MessageScreen}
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#000",
+          },
+          headerTintColor: "#EEEEEE",
         }}
       />
       <Stack.Screen

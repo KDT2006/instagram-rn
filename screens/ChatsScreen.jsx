@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import Chat from "../components/Chat";
 
-const ChatScreen = () => {
+const ChatsScreen = ({ navigation }) => {
   const [chats, setChats] = useState([]);
   const [user, setUser] = useState(null);
 
@@ -39,15 +39,15 @@ const ChatScreen = () => {
       <FlatList
         data={chats}
         renderItem={({ item, index }) => (
-          <Chat key={index} chat={item} user={user} />
+          <Chat key={index} chat={item} user={user} navigation={navigation} />
         )}
-        contentContainerStyle={{padding: 10}}
+        contentContainerStyle={{ padding: 10 }}
       />
     </View>
   );
 };
 
-export default ChatScreen;
+export default ChatsScreen;
 
 const styles = StyleSheet.create({
   container: {
