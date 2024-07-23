@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   StyleSheet,
@@ -9,13 +10,14 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, Feather, MaterialIcons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 
 const MessageScreen = ({ navigation, route }) => {
-  const [convo, setConvo] = useState(null);
   const [user, setUser] = useState(null);
   const [messages, setMessages] = useState(null);
   const [newMessage, setNewMessage] = useState("");
+  const [visibleOptions, setVisibleOptions] = useState(null);
 
   const convo_id = route.params.convo_id;
 
@@ -37,7 +39,6 @@ const MessageScreen = ({ navigation, route }) => {
     }
 
     console.log("Convo: ", convoData);
-    setConvo(convoData);
     navigation.setOptions({
       headerTitle:
         convoData.user1.id === user.id
@@ -136,11 +137,47 @@ const MessageScreen = ({ navigation, route }) => {
     }
   };
 
-  if (!messages || messages.length === 0) {
+  const handleLongPress = (messageId) => {
+    setVisibleOptions((prev) => (prev === messageId ? null : messageId));
+  };
+
+  const handleCopyMessage = async (message) => {
+    await Clipboard.setStringAsync(message);
+    setVisibleOptions(null);
+  };
+
+  const handleDeleteMessage = async (id) => {
+    const { error } = await supabase.from("messages").delete().eq("id", id);
+
+    if (error) {
+      console.error("Error deleting message: ", error);
+      Alert.alert(
+        "Error Occurred!",
+        "Unable to delete message: " + error.message
+      );
+    } else {
+      setVisibleOptions(null);
+    }
+  };
+
+  if (!messages) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#000",
+        }}
+      >
+        <ActivityIndicator size="large" color="#EEEEEE" />
+      </View>
+    );
+  } else if (messages.length === 0) {
     return (
       <View
         style={[
-          styles.screen,
+          styles.container,
           { alignItems: "center", justifyContent: "center" },
         ]}
       >
@@ -155,15 +192,42 @@ const MessageScreen = ({ navigation, route }) => {
         data={messages}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View
-            style={[
-              styles.messageContainer,
-              item.sender_id === user.id
-                ? styles.myMessage
-                : styles.theirMessage,
-            ]}
-          >
-            <Text style={styles.messageText}>{item.content}</Text>
+          <View>
+            <TouchableOpacity
+              onLongPress={() => handleLongPress(item.id)}
+              style={[
+                styles.messageContainer,
+                item.sender_id === user.id
+                  ? styles.myMessage
+                  : styles.theirMessage,
+              ]}
+            >
+              <Text style={styles.messageText}>{item.content}</Text>
+            </TouchableOpacity>
+            {visibleOptions === item.id ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent:
+                    item.sender_id === user.id ? "flex-end" : "flex-start",
+                }}
+              >
+                <View style={styles.optionsContainer}>
+                  <Feather
+                    name="copy"
+                    onPress={() => handleCopyMessage(item.content)}
+                    size={24}
+                    color="#ccc"
+                  />
+                  <MaterialIcons
+                    name="delete-outline"
+                    onPress={() => handleDeleteMessage(item.id)}
+                    size={24}
+                    color="#ccc"
+                  />
+                </View>
+              </View>
+            ) : null}
           </View>
         )}
       />
@@ -207,7 +271,15 @@ const styles = StyleSheet.create({
   },
   messageText: {
     color: "#fff",
-    fontSize: 15
+    fontSize: 15,
+  },
+  optionsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 10,
+    width: "20%",
+    margin: 10,
+    gap: 10,
   },
   inputContainer: {
     flexDirection: "row",
