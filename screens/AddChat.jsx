@@ -56,8 +56,7 @@ const AddChatScreen = () => {
 
     // Step 4: Filter out users who are already in conversations with the current user
     const filteredUsers = allUsers.filter(
-      (u) =>
-        !userIdsInConversations.has(u.id) && u.id !== user.id
+      (u) => !userIdsInConversations.has(u.id) && u.id !== user.id
     );
 
     setUsers(filteredUsers);
@@ -102,6 +101,21 @@ const AddChatScreen = () => {
       </TouchableOpacity>
     );
   };
+
+  if (users.length === 0) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#000",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={styles.heading}>No Users to add at the moment, please try again.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

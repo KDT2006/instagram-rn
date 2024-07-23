@@ -94,32 +94,29 @@ const NewPostScreen = ({ navigation }) => {
 
     if (response) {
       console.log("Media uploaded successfully:", response);
+
       // Proceed with creating the post using the response data if needed
-    }
+      const { data: url_data } = supabase.storage
+        .from("posts")
+        .getPublicUrl(response.path);
 
-    const { data: url_data } = supabase.storage
-      .from("posts")
-      .getPublicUrl(response.path);
-
-    const { data, error } = await supabase
-      .from("posts")
-      .insert([
+      const { error } = await supabase.from("posts").insert([
         {
           caption,
           media: url_data.publicUrl,
           user_id: (await supabase.auth.getSession()).data.session.user.id,
           media_type: uploadImage ? "image" : "video",
         },
-      ])
-      .select();
+      ]);
 
-    setLoading(false);
+      setLoading(false);
 
-    if (error) {
-      Alert.alert("Error occurred", error.message, [{ text: "OK" }]);
+      if (error) {
+        Alert.alert("Error occurred", error.message, [{ text: "OK" }]);
+      }
+
+      navigation.navigate("Home");
     }
-
-    navigation.navigate("Home");
   };
 
   if (loading) {

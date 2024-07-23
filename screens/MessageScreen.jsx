@@ -2,6 +2,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   StyleSheet,
   Text,
   TextInput,
@@ -10,18 +11,23 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase";
-import { FontAwesome, Feather, MaterialIcons } from "@expo/vector-icons";
-import * as Clipboard from "expo-clipboard";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import Message from "../components/Message";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { decode } from "base64-arraybuffer";
 
 const MessageScreen = ({ navigation, route }) => {
   const [user, setUser] = useState(null);
   const [messages, setMessages] = useState(null);
   const [newMessage, setNewMessage] = useState("");
-  const [visibleOptions, setVisibleOptions] = useState(null);
+  const [image, setImage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const convo_id = route.params.convo_id;
 
   const fetchConvoAndUser = async () => {
+    setLoading(true);
     const user = (await supabase.auth.getUser()).data.user;
     setUser(user);
     const { data: convoData, error: convoError } = await supabase
@@ -62,6 +68,7 @@ const MessageScreen = ({ navigation, route }) => {
       console.log("Messages: ", messagesData);
       setMessages(messagesData);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -113,54 +120,119 @@ const MessageScreen = ({ navigation, route }) => {
     };
   }, [convo_id]);
 
-  const sendMessage = async () => {
-    if (newMessage.trim() === "") return;
+  const uploadMedia = async () => {
+    try {
+      const userId = (await supabase.auth.getUser()).data.user.id;
+      const base64 = await FileSystem.readAsStringAsync(image.uri, {
+        encoding: "base64",
+      });
+      const filePath = `${userId}/${convo_id}/${image.fileName}`;
+      contentType = image.mimeType;
 
-    const { error } = await supabase
-      .from("messages")
-      .insert([
-        {
+      const { data, error } = await supabase.storage
+        .from("conversations")
+        .upload(filePath, decode(base64), {
+          contentType,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Upload error: ", error);
+      Alert.alert("Upload Error occurred!", error.message);
+      setLoading(false);
+      return null;
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!image && newMessage.trim() === "") return;
+
+    setLoading(true);
+
+    // Check if its an image type
+    if (image) {
+      // Upload image to supabase storage
+      const response = await uploadMedia();
+      if (response) {
+        // Proceed with sending the message with media
+
+        // Get the public URL of the uploaded image
+        const { data: url_data } = supabase.storage
+          .from("conversations")
+          .getPublicUrl(response.path);
+
+        // INSERT data into messages table
+        const { error } = await supabase.from("messages").insert({
           conversation_id: convo_id,
           sender_id: user.id,
           content: newMessage,
-          message_type: "text",
-        },
-      ])
-      .select()
-      .single();
+          message_type: "image",
+          media_url: url_data.publicUrl,
+          file_path: response.path,
+        });
 
-    if (error) {
-      console.error("Error sending message: ", error);
-      Alert.alert("Error Occurred!", "Error sending message: " + error.message);
+        setLoading(false);
+
+        if (error) {
+          console.log("Unable to send message: ", error);
+          Alert.alert(
+            "Error occurred!",
+            "Unable to send message: " + error.message
+          );
+        }
+
+        setImage(null);
+        newMessage ? setNewMessage(null) : null;
+      }
     } else {
-      setNewMessage("");
+      setLoading(true);
+      const { error } = await supabase
+        .from("messages")
+        .insert([
+          {
+            conversation_id: convo_id,
+            sender_id: user.id,
+            content: newMessage,
+            message_type: "text",
+          },
+        ])
+        .select()
+        .single();
+      setLoading(false);
+
+      if (error) {
+        console.error("Error sending message: ", error);
+        Alert.alert(
+          "Error Occurred!",
+          "Error sending message: " + error.message
+        );
+      } else {
+        setNewMessage("");
+      }
     }
   };
 
-  const handleLongPress = (messageId) => {
-    setVisibleOptions((prev) => (prev === messageId ? null : messageId));
-  };
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.2,
+    });
 
-  const handleCopyMessage = async (message) => {
-    await Clipboard.setStringAsync(message);
-    setVisibleOptions(null);
-  };
+    console.log(result);
 
-  const handleDeleteMessage = async (id) => {
-    const { error } = await supabase.from("messages").delete().eq("id", id);
-
-    if (error) {
-      console.error("Error deleting message: ", error);
-      Alert.alert(
-        "Error Occurred!",
-        "Unable to delete message: " + error.message
-      );
-    } else {
-      setVisibleOptions(null);
+    if (!result.canceled) {
+      setImage(result.assets[0]);
     }
   };
 
-  if (!messages) {
+  if (loading) {
     return (
       <View
         style={{
@@ -173,7 +245,7 @@ const MessageScreen = ({ navigation, route }) => {
         <ActivityIndicator size="large" color="#EEEEEE" />
       </View>
     );
-  } else if (messages.length === 0) {
+  } else if (!messages || messages.length === 0) {
     return (
       <View
         style={[
@@ -191,46 +263,14 @@ const MessageScreen = ({ navigation, route }) => {
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View>
-            <TouchableOpacity
-              onLongPress={() => handleLongPress(item.id)}
-              style={[
-                styles.messageContainer,
-                item.sender_id === user.id
-                  ? styles.myMessage
-                  : styles.theirMessage,
-              ]}
-            >
-              <Text style={styles.messageText}>{item.content}</Text>
-            </TouchableOpacity>
-            {visibleOptions === item.id ? (
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent:
-                    item.sender_id === user.id ? "flex-end" : "flex-start",
-                }}
-              >
-                <View style={styles.optionsContainer}>
-                  <Feather
-                    name="copy"
-                    onPress={() => handleCopyMessage(item.content)}
-                    size={24}
-                    color="#ccc"
-                  />
-                  <MaterialIcons
-                    name="delete-outline"
-                    onPress={() => handleDeleteMessage(item.id)}
-                    size={24}
-                    color="#ccc"
-                  />
-                </View>
-              </View>
-            ) : null}
-          </View>
-        )}
+        renderItem={({ item }) => <Message message={item} user={user} />}
       />
+      {image ? (
+        <Image
+          source={{ uri: image.uri }}
+          style={{ width: "100%", aspectRatio: 16 / 9 }}
+        />
+      ) : null}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -240,9 +280,16 @@ const MessageScreen = ({ navigation, route }) => {
           placeholderTextColor="#888"
           multiline
         />
-        <TouchableOpacity onPress={sendMessage}>
-          <FontAwesome name="send" size={24} color="#fff" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          {newMessage === "" ? (
+            <TouchableOpacity onPress={pickImage}>
+              <Ionicons name="document" size={24} color="#fff" />
+            </TouchableOpacity>
+          ) : null}
+          <TouchableOpacity onPress={sendMessage}>
+            <FontAwesome name="send" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -254,32 +301,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
-  },
-  messageContainer: {
-    padding: 15,
-    marginHorizontal: 10,
-    marginVertical: 5,
-    borderRadius: 10,
-  },
-  myMessage: {
-    alignSelf: "flex-end",
-    backgroundColor: "#cf4fe3",
-  },
-  theirMessage: {
-    alignSelf: "flex-start",
-    backgroundColor: "#39323b",
-  },
-  messageText: {
-    color: "#fff",
-    fontSize: 15,
-  },
-  optionsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 10,
-    width: "20%",
-    margin: 10,
-    gap: 10,
   },
   inputContainer: {
     flexDirection: "row",
