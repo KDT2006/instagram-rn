@@ -4,10 +4,9 @@ import { Feather, Ionicons, AntDesign, FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 import { Video } from "expo-av";
 
-const Post = ({ post }) => {
+const Post = ({ post, openComments }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  // console.log(post);
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
@@ -125,6 +124,23 @@ const Post = ({ post }) => {
     }
   };
 
+  const handleOpenComments = async () => {
+    // Fetch comments from supabase and pass it to the HomeScreen for rendering it in a modal
+    const { data: fetchedComments, error } = await supabase // not optimized, TODO: Use Pagination
+      .from("comments")
+      .select("*, user_id:profiles(*)")
+      .eq("post_id", post.id);
+
+    if (error) {
+      console.error(error);
+      Alert.alert("Error occurred!", "Unable to fetch comments at the moment.");
+      return;
+    }
+
+    console.log("Fetched comments: ", fetchedComments);
+    openComments(fetchedComments, post.id);
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: "#000", paddingBottom: 20 }}>
       <View style={styles.header}>
@@ -171,7 +187,12 @@ const Post = ({ post }) => {
               color={isLiked ? "red" : "#EEEEEE"}
             />
           </Pressable>
-          <Ionicons name="chatbubble-outline" size={25} color="#EEEEEE" />
+          <Ionicons
+            name="chatbubble-outline"
+            size={25}
+            color="#EEEEEE"
+            onPress={handleOpenComments}
+          />
           <Feather name="send" size={25} color="#EEEEEE" />
         </View>
         <Pressable onPress={handleSave}>
