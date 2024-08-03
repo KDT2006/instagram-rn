@@ -15,6 +15,7 @@ import AddChatScreen from "./screens/AddChat";
 import ChatsScreen from "./screens/ChatsScreen";
 import MessageScreen from "./screens/MessageScreen";
 import PostScreen from "./screens/PostScreen";
+import UpdateProfileScreen from "./screens/UpdateProfileScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -68,6 +69,7 @@ const HomeStackNavigator = ({ navigation }) => {
           ),
         }}
       />
+      <Stack.Screen name="profile" component={ProfileScreen} />
       <Stack.Screen
         name="message"
         component={MessageScreen}
@@ -156,6 +158,18 @@ const ProfileStackNavigator = () => {
           headerTitle: "Post",
         }}
       />
+      <Stack.Screen
+        name="updateProfile"
+        component={UpdateProfileScreen}
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#000",
+          },
+          headerTintColor: "#EEEEEE",
+          headerTitle: "Update Profile",
+        }}
+      />
     </Stack.Navigator>
   );
 };
@@ -177,10 +191,10 @@ const MainTabsNavigator = () => {
         options={{
           headerTitle: "Feed",
           headerTitleAlign: "center",
-          tabBarIcon: ({ color, focused }) => (
-            <FontAwesome
+          tabBarIcon: ({ focused }) => (
+            <Feather
               name="home"
-              size={26}
+              size={25}
               color={focused ? "#EEEEEE" : "gray"}
             />
           ),

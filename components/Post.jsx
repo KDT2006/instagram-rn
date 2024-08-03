@@ -4,13 +4,16 @@ import { Feather, Ionicons, AntDesign, FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 import { Video } from "expo-av";
 
-const Post = ({ post, openComments, openShare }) => {
+const Post = ({ post, openComments, openShare, navigation }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isTextExpanded, setIsTextExpanded] = useState(false);
+  const [userID, setUserID] = useState(null);
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
       const user = (await supabase.auth.getUser()).data.user;
+      setUserID(user.id);
       const { count, error } = await supabase
         .from("user_likes")
         .select("*", { count: "estimated", head: true })
@@ -167,14 +170,28 @@ const Post = ({ post, openComments, openShare }) => {
   return (
     <View style={{ flex: 1, backgroundColor: "#000", paddingBottom: 20 }}>
       <View style={styles.header}>
-        <Image
-          style={styles.avatar}
-          source={{
-            uri:
-              post.user.avatar_url ||
-              "https://w7.pngwing.com/pngs/505/761/png-transparent-login-computer-icons-avatar-icon-monochrome-black-silhouette-thumbnail.png",
+        <Pressable
+          onPress={() => {
+            const myself = userID === post.user.id;
+            navigation.navigate(
+              myself ? "Profile" : "profile",
+              myself
+                ? null
+                : {
+                    userID: post.user.id,
+                  }
+            );
           }}
-        />
+        >
+          <Image
+            style={styles.avatar}
+            source={{
+              uri:
+                post.user.avatar_url ||
+                "https://w7.pngwing.com/pngs/505/761/png-transparent-login-computer-icons-avatar-icon-monochrome-black-silhouette-thumbnail.png",
+            }}
+          />
+        </Pressable>
         <Text style={{ color: "#EEEEEE" }}>{post.user.username}</Text>
       </View>
       {post.media_type === "image" ? (
@@ -232,7 +249,11 @@ const Post = ({ post, openComments, openShare }) => {
       </View>
       <View style={{ paddingHorizontal: 10 }}>
         <Text style={{ color: "#ccc" }}>{post.likes} likes</Text>
-        <Text numberOfLines={1} style={{color: "#ccc9"}}>
+        <Text
+          numberOfLines={isTextExpanded ? null : 3}
+          style={{ color: "#ccc9" }}
+          onPress={() => setIsTextExpanded((prev) => !prev)}
+        >
           {post.caption}
         </Text>
       </View>

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   View,
+  TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase";
@@ -74,6 +75,13 @@ const SettingsScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         horizontal
       />
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("updateProfile")}
+      >
+        <Text>Update Profile</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -89,7 +97,7 @@ const styles = StyleSheet.create({
   header: {
     color: "#EEEEEE",
     fontSize: 18,
-    marginVertical: 10,
+    marginBottom: 10,
   },
   post: {
     marginRight: 10,
@@ -103,5 +111,12 @@ const styles = StyleSheet.create({
     color: "#EEEEEE",
     marginTop: 5,
     width: 150,
+  },
+  button: {
+    backgroundColor: "#758694",
+    padding: 10,
+    borderRadius: 25,
+    width: "50%",
+    alignItems: "center",
   },
 });

@@ -14,7 +14,13 @@ const Chat = ({ chat, user, navigation }) => {
       }}
       style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
     >
-      <Image source={{ uri: otherUser.avatar_url }} style={styles.avatar} />
+      <Pressable
+        onPress={() => {
+          navigation.navigate("profile", { userID: otherUser.id });
+        }}
+      >
+        <Image source={{ uri: otherUser.avatar_url }} style={styles.avatar} />
+      </Pressable>
       <Text style={styles.name}>{otherUser.full_name}</Text>
     </Pressable>
   );
