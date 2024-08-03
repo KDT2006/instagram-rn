@@ -4,7 +4,7 @@ import { Feather, MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { supabase } from "../supabase";
 
-const Message = ({ message, user }) => {
+const Message = ({ message, user, navigation }) => {
   const [visibleOptions, setVisibleOptions] = useState(null);
 
   const handleLongPress = (messageId) => {
@@ -52,6 +52,25 @@ const Message = ({ message, user }) => {
     }
   };
 
+  if (message.message_type === "post") {
+    return (
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("post", { post_id: message.post.id })
+        }
+        style={[
+          styles.messageContainer,
+          message.sender_id === user.id
+            ? styles.myMessage
+            : styles.theirMessage,
+          { padding: 2 },
+        ]}
+      >
+        <Image source={{ uri: message.post.media }} style={styles.postImage} />
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <View>
       <TouchableOpacity
@@ -61,7 +80,7 @@ const Message = ({ message, user }) => {
           message.sender_id === user.id
             ? styles.myMessage
             : styles.theirMessage,
-          { padding: message.message_type === "image" ? 5 : 15 },
+          { padding: message.message_type === "image" ? 2 : 15 },
         ]}
       >
         {message.message_type === "text" ? (
@@ -73,7 +92,7 @@ const Message = ({ message, user }) => {
               source={{ uri: message.media_url }}
               style={[styles.imageMessage]}
             />
-            {message.content ? (
+            {message.content !== "" ? (
               <Text style={{ color: "#EEEEEE" }}>{message.content}</Text>
             ) : null}
           </View>
@@ -120,7 +139,7 @@ const styles = StyleSheet.create({
   },
   myMessage: {
     alignSelf: "flex-end",
-    backgroundColor: "#cf4fe3",
+    backgroundColor: "#b151e8",
   },
   theirMessage: {
     alignSelf: "flex-start",
@@ -128,12 +147,19 @@ const styles = StyleSheet.create({
   },
   messageText: {
     color: "#fff",
-    fontSize: 15,
+    fontSize: 13.5,
   },
   imageMessage: {
     width: "100%",
     aspectRatio: 16 / 9,
     resizeMode: "cover",
+    borderRadius: 10,
+  },
+  postImage: {
+    width: "70%",
+    aspectRatio: 3 / 3.5,
+    resizeMode: "stretch",
+    borderRadius: 10,
   },
   optionsContainer: {
     flexDirection: "row",

@@ -54,7 +54,7 @@ const MessageScreen = ({ navigation, route }) => {
 
     const { data: messagesData, error: messagesError } = await supabase
       .from("messages")
-      .select("*")
+      .select("*, post:posts(*)")
       .eq("conversation_id", convo_id)
       .order("created_at", { ascending: true });
 
@@ -263,7 +263,9 @@ const MessageScreen = ({ navigation, route }) => {
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <Message message={item} user={user} />}
+        renderItem={({ item }) => (
+          <Message message={item} user={user} navigation={navigation} />
+        )}
       />
       {image ? (
         <Image

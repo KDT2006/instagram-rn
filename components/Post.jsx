@@ -4,23 +4,23 @@ import { Feather, Ionicons, AntDesign, FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 import { Video } from "expo-av";
 
-const Post = ({ post, openComments }) => {
+const Post = ({ post, openComments, openShare }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
       const user = (await supabase.auth.getUser()).data.user;
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from("user_likes")
-        .select("*", { count: "estimated" })
+        .select("*", { count: "estimated", head: true })
         .eq("user_id", user.id)
         .eq("post_id", post.id);
 
       if (error) {
         console.error("Error fetching like status:", error);
       } else {
-        setIsLiked(data.length > 0);
+        setIsLiked(count > 0);
       }
     };
 
@@ -137,8 +137,31 @@ const Post = ({ post, openComments }) => {
       return;
     }
 
-    console.log("Fetched comments: ", fetchedComments);
+    // console.log("Fetched comments: ", fetchedComments);
     openComments(fetchedComments, post.id);
+  };
+
+  const handleOpenShare = async () => {
+    const user = (await supabase.auth.getUser()).data.user;
+    const { data: convos, error } = await supabase
+      .from("conversations")
+      .select(
+        `
+        *,
+        user1:profiles!user1(*),
+        user2:profiles!user2(*)
+      `
+      )
+      .or(`user1.eq.${user.id},user2.eq.${user.id}`);
+
+    if (error) {
+      console.error(error);
+      Alert.alert("Error Occurred!", "Unable to fetch convos to share");
+      return;
+    }
+
+    // console.log("Fetched convos: ", convos);
+    openShare(post.id, convos);
   };
 
   return (
@@ -157,11 +180,11 @@ const Post = ({ post, openComments }) => {
       {post.media_type === "image" ? (
         <Image
           source={{ uri: post.media }}
-          style={{ width: "100%", aspectRatio: 4 / 3 }}
+          style={{ width: "100%", aspectRatio: 3 / 3.5, resizeMode: "contain" }}
         />
       ) : post.media_type === "video" ? (
         <Video
-          style={{ width: "100%", aspectRatio: 4 / 3 }}
+          style={{ width: "100%", aspectRatio: 3 / 3.5 }}
           source={{
             uri:
               post.media ||
@@ -193,19 +216,23 @@ const Post = ({ post, openComments }) => {
             color="#EEEEEE"
             onPress={handleOpenComments}
           />
-          <Feather name="send" size={25} color="#EEEEEE" />
-        </View>
-        <Pressable onPress={handleSave}>
-          <FontAwesome
-            name={isSaved ? "bookmark" : "bookmark-o"}
+          <Feather
+            name="send"
             size={25}
             color="#EEEEEE"
+            onPress={handleOpenShare}
           />
-        </Pressable>
+        </View>
+        <FontAwesome
+          name={isSaved ? "bookmark" : "bookmark-o"}
+          size={25}
+          color="#EEEEEE"
+          onPress={handleSave}
+        />
       </View>
       <View style={{ paddingHorizontal: 10 }}>
         <Text style={{ color: "#ccc" }}>{post.likes} likes</Text>
-        <Text numberOfLines={1} style={styles.caption}>
+        <Text numberOfLines={1} style={{color: "#ccc9"}}>
           {post.caption}
         </Text>
       </View>
@@ -227,8 +254,5 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 25,
-  },
-  caption: {
-    color: "#ccc9",
   },
 });

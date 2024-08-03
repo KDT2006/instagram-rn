@@ -9,11 +9,12 @@ import { useEffect, useState } from "react";
 import AuthScreen from "./screens/AuthScreen";
 import { supabase } from "./supabase";
 import { Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import SettingsScreen from "./screens/SettingsScreen";
 import AddChatScreen from "./screens/AddChat";
 import ChatsScreen from "./screens/ChatsScreen";
 import MessageScreen from "./screens/MessageScreen";
+import PostScreen from "./screens/PostScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -79,6 +80,18 @@ const HomeStackNavigator = ({ navigation }) => {
         }}
       />
       <Stack.Screen
+        name="post"
+        component={PostScreen}
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#000",
+          },
+          headerTintColor: "#EEEEEE",
+          headerTitle: "Post",
+        }}
+      />
+      <Stack.Screen
         name="addChat"
         component={AddChatScreen}
         options={{
@@ -131,6 +144,18 @@ const ProfileStackNavigator = () => {
           headerTitle: "Settings",
         }}
       />
+      <Stack.Screen
+        name="post"
+        component={PostScreen}
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#000",
+          },
+          headerTintColor: "#EEEEEE",
+          headerTitle: "Post",
+        }}
+      />
     </Stack.Navigator>
   );
 };
@@ -142,7 +167,7 @@ const MainTabsNavigator = () => {
         tabBarActiveTintColor: "black",
         tabBarShowLabel: false,
         headerShown: false,
-        tabBarActiveBackgroundColor: "#222831",
+        tabBarActiveBackgroundColor: "#000",
         tabBarInactiveBackgroundColor: "#000",
       }}
     >
@@ -156,7 +181,7 @@ const MainTabsNavigator = () => {
             <FontAwesome
               name="home"
               size={26}
-              color={focused ? "#EEEEEE" : "#ccc"}
+              color={focused ? "#EEEEEE" : "gray"}
             />
           ),
         }}
@@ -169,7 +194,7 @@ const MainTabsNavigator = () => {
             <FontAwesome
               name="plus-square-o"
               size={26}
-              color={focused ? "#EEEEEE" : "#ccc"}
+              color={focused ? "#EEEEEE" : "gray"}
             />
           ),
         }}
@@ -179,10 +204,10 @@ const MainTabsNavigator = () => {
         component={ProfileStackNavigator}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <FontAwesome
+            <Feather
               name="user"
               size={26}
-              color={focused ? "#EEEEEE" : "#ccc"}
+              color={focused ? "#EEEEEE" : "gray"}
             />
           ),
         }}

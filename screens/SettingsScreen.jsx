@@ -1,8 +1,15 @@
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase";
 
-const SettingsScreen = () => {
+const SettingsScreen = ({ navigation }) => {
   const [likedPosts, setLikedPosts] = useState([]);
   const [savedPosts, setSavedPosts] = useState([]);
 
@@ -40,12 +47,15 @@ const SettingsScreen = () => {
   };
 
   const renderPost = ({ item }) => (
-    <View style={styles.post}>
+    <Pressable
+      onPress={() => navigation.navigate("post", { post_id: item.id })}
+      style={styles.post}
+    >
       <Image source={{ uri: item.media }} style={styles.postImage} />
-      <Text numberOfLines={1} ellipsizeMode="tail" style={styles.postCaption}>
+      <Text numberOfLines={1} style={styles.postCaption}>
         {item.caption}
       </Text>
-    </View>
+    </Pressable>
   );
 
   return (
@@ -92,5 +102,6 @@ const styles = StyleSheet.create({
   postCaption: {
     color: "#EEEEEE",
     marginTop: 5,
+    width: 150,
   },
 });

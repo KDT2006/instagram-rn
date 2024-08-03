@@ -16,7 +16,7 @@
     "@react-navigation/native-stack": "^6.10.0",
     "@supabase/supabase-js": "^2.44.2",
     "base64-arraybuffer": "^1.0.2",
-    "expo": "^51.0.22",
+    "expo": "^51.0.24",
     "expo-av": "~14.0.6",
     "expo-clipboard": "~6.0.3",
     "expo-file-system": "~17.0.1",

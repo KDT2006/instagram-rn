@@ -2,6 +2,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   Keyboard,
   Modal,
   Pressable,
@@ -29,7 +30,9 @@ const HomeScreen = () => {
   const [comments, setComments] = useState([]);
   const [currentPostID, setCurrentPostID] = useState(null);
   const [newComment, setNewComment] = useState("");
-  const [userID, setUserID] = useState("");
+  const [user, setUser] = useState(null);
+  const [shareVisible, setShareVisible] = useState(false);
+  const [shareConvos, setShareConvos] = useState([]);
 
   const openComments = (fetchedComments, postID) => {
     setComments(fetchedComments);
@@ -43,6 +46,17 @@ const HomeScreen = () => {
     setCurrentPostID(null);
   };
 
+  const openShare = (postID, convos) => {
+    setCurrentPostID(postID);
+    setShareConvos(convos);
+    setShareVisible(true);
+  };
+  const closeShare = () => {
+    setShareVisible(false);
+    setCurrentPostID(null);
+    setShareConvos([]);
+  };
+
   const postNewComment = async () => {
     if (newComment === "") {
       return;
@@ -50,7 +64,7 @@ const HomeScreen = () => {
 
     const { error } = await supabase.from("comments").insert({
       post_id: currentPostID,
-      user_id: userID,
+      user_id: user.id,
       content: newComment,
     });
 
@@ -77,9 +91,27 @@ const HomeScreen = () => {
     setPosts(data);
   };
 
+  const handleSendPost = async (convo_id) => {
+    const { error } = await supabase.from("messages").insert({
+      conversation_id: convo_id,
+      sender_id: user.id,
+      message_type: "post",
+      post: currentPostID,
+    });
+
+    if (error) {
+      console.error(error);
+      Alert.alert("Error Occurred!", "Unable to share post to user");
+    }
+
+    setCurrentPostID(null)
+    setShareConvos([])
+    setShareVisible(false)
+  };
+
   useEffect(() => {
     fetchPosts().then(() => setLoading(false));
-    supabase.auth.getUser().then((u) => setUserID(u.data.user.id));
+    supabase.auth.getUser().then((u) => setUser(u.data.user));
   }, []);
 
   if (loading) {
@@ -113,11 +145,12 @@ const HomeScreen = () => {
             key={index}
             post={item}
             openComments={openComments}
-            newComment={newComment}
+            openShare={openShare}
           />
         )}
       />
       <GestureHandlerRootView>
+        {/* Comments Modal */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -137,7 +170,7 @@ const HomeScreen = () => {
                 <FlatList
                   data={comments}
                   renderItem={({ item, index }) => (
-                    <Comment comment={item} user_id={userID} key={index} />
+                    <Comment comment={item} user_id={user.id} key={index} />
                   )}
                 />
               )}
@@ -147,7 +180,7 @@ const HomeScreen = () => {
                   alignItems: "center",
                   gap: 10,
                   alignSelf: "center",
-                  marginTop: 10
+                  marginTop: 10,
                 }}
               >
                 <TextInput
@@ -168,6 +201,46 @@ const HomeScreen = () => {
                   <FontAwesome name="send" size={21} color="#fff" />
                 </TouchableOpacity>
               </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Share Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={shareVisible}
+          onRequestClose={closeShare}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Pressable onPress={closeShare} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </Pressable>
+              <FlatList
+                data={shareConvos}
+                numColumns={3}
+                renderItem={({ item, index }) => (
+                  <Pressable
+                    onPress={() => handleSendPost(item.id)}
+                    key={index}
+                  >
+                    <Image
+                      source={{
+                        uri:
+                          user.id === item.user1.id
+                            ? item.user2.avatar_url
+                            : item.user1.avatar_url,
+                      }}
+                      style={{
+                        width: 80,
+                        aspectRatio: 1 / 1,
+                        borderRadius: 50,
+                      }}
+                    />
+                  </Pressable>
+                )}
+              />
             </View>
           </View>
         </Modal>
@@ -192,7 +265,7 @@ const styles = StyleSheet.create({
   modalContent: {
     width: "100%",
     maxHeight: "80%",
-    height: "50%",
+    height: "70%",
     backgroundColor: "#222831",
     borderRadius: 10,
     padding: 20,
