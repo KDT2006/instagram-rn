@@ -9,6 +9,7 @@ const Post = ({ post, openComments, openShare, navigation }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [isTextExpanded, setIsTextExpanded] = useState(false);
   const [userID, setUserID] = useState(null);
+  const [totalLikes, setTotalLikes] = useState(0);
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
@@ -22,9 +23,23 @@ const Post = ({ post, openComments, openShare, navigation }) => {
 
       if (error) {
         console.error("Error fetching like status:", error);
-      } else {
-        setIsLiked(count > 0);
+        return;
       }
+
+      setIsLiked(count > 0);
+
+      // Fetch total number of likes for the post
+      const { count: totalLikesCount, error: totalLikesError } = await supabase
+        .from("user_likes")
+        .select("*", { count: "estimated", head: true })
+        .eq("post_id", post.id);
+
+      if (totalLikesError) {
+        console.error("Error fetching total likes count:", totalLikesError);
+        return;
+      }
+
+      setTotalLikes(totalLikesCount);
     };
 
     const fetchSaveStatus = async () => {
@@ -57,18 +72,14 @@ const Post = ({ post, openComments, openShare, navigation }) => {
         .insert([{ user_id: user.id, post_id: post.id }])
         .select();
 
-      const { error: err2 } = await supabase
-        .from("posts")
-        .update({ likes: post.likes + 1 })
-        .eq("id", post.id);
-
-      if (error || err2) {
-        console.error("Error liking post:", error);
+      if (error) {
+        console.error("Error liking post(inserting into user_likes): ", error);
         Alert.alert("Error Occurred!", "Unable to Like Post. " + error.message);
         setIsLiked(!newLikedState);
-      } else {
-        console.log("Post liked:", data);
+        return;
       }
+
+      console.log("Post liked:", data);
     } else {
       // User unliked the post, remove from user_likes table
       const { data, error } = await supabase
@@ -78,22 +89,17 @@ const Post = ({ post, openComments, openShare, navigation }) => {
         .eq("post_id", post.id)
         .select();
 
-      const currentLikes = post.likes > 0 ? post.likes - 1 : 0;
-      const { error: err2 } = await supabase
-        .from("posts")
-        .update({ likes: currentLikes })
-        .eq("id", post.id);
-
-      if (error || err2) {
-        console.error("Error unliking post:", error);
+      if (error) {
+        console.error("Error unliking post(deleting from user_likes): ", error);
         Alert.alert(
           "Error Occurred!",
           "Unable to Unlike Post. " + error.message
         );
-        setIsLiked(!newLikedState); // Revert state if there was an error
-      } else {
-        console.log("Post unliked:", data);
+        setIsLiked(!newLikedState);
+        return;
       }
+
+      console.log("Post unliked:", data);
     }
   };
 
@@ -248,7 +254,7 @@ const Post = ({ post, openComments, openShare, navigation }) => {
         />
       </View>
       <View style={{ paddingHorizontal: 10 }}>
-        <Text style={{ color: "#ccc" }}>{post.likes} likes</Text>
+        <Text style={{ color: "#ccc" }}>{totalLikes} likes</Text>
         <Text
           numberOfLines={isTextExpanded ? null : 3}
           style={{ color: "#ccc9" }}

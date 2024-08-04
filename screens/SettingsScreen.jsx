@@ -80,7 +80,7 @@ const SettingsScreen = ({ navigation }) => {
         style={styles.button}
         onPress={() => navigation.navigate("updateProfile")}
       >
-        <Text>Update Profile</Text>
+        <Text style={{color: "#EEEEEE"}}>Update Profile</Text>
       </TouchableOpacity>
     </View>
   );

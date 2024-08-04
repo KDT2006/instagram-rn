@@ -84,9 +84,27 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const fetchPosts = async () => {
+    // fetch following users' IDs first to view their posts only
+    const userID = (await supabase.auth.getUser()).data.user.id;
+    let { data: followingData, error: errorFetchFollowers } = await supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", userID);
+
+    if (errorFetchFollowers) {
+      console.error("Error while fetching followers: ", errorFetchFollowers);
+      Alert.alert("Error Occurred!", "Unable to fetch posts, please try again");
+      return;
+    }
+
+    // followerIDs is an array of objects but we need array of IDs
+    // Extract the following IDs into an array
+    const followingIDs = followingData.map((entry) => entry.following_id);
+
     let { data, error } = await supabase
       .from("posts")
       .select("*, user:profiles(*)")
+      .in("user_id", followingIDs)
       .order("created_at", { ascending: false });
     if (error) {
       Alert.alert("Error Occurred", error.message);
@@ -132,6 +150,24 @@ const HomeScreen = ({ navigation }) => {
           size={"large"}
           color={"#EEEEEE"}
         />
+      </View>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: "#000",
+          padding: 20
+        }}
+      >
+        <Text style={{ fontSize: 18, color: "#EEEEEE", textAlign: "center" }}>
+          No posts, follow someone to view their posts
+        </Text>
       </View>
     );
   }

@@ -30,6 +30,7 @@ const PostScreen = ({ navigation, route }) => {
   const [newComment, setNewComment] = useState(null);
   const [shareConvos, setShareConvos] = useState([]);
   const [shareVisible, setShareVisible] = useState(false);
+  const [totalLikes, setTotalLikes] = useState(0);
 
   const post_id = route.params.post_id;
 
@@ -60,9 +61,23 @@ const PostScreen = ({ navigation, route }) => {
 
     if (error) {
       console.error("Error fetching like status:", error);
-    } else {
-      setIsLiked(count > 0);
+      return;
     }
+
+    setIsLiked(count > 0);
+
+    // Fetch total number of likes for the post
+    const { count: totalLikesCount, error: totalLikesError } = await supabase
+      .from("user_likes")
+      .select("*", { count: "estimated", head: true })
+      .eq("post_id", post_id);
+
+    if (totalLikesError) {
+      console.error("Error fetching total likes count:", totalLikesError);
+      return;
+    }
+
+    setTotalLikes(totalLikesCount);
   };
 
   const fetchSaveStatus = async () => {
@@ -90,18 +105,14 @@ const PostScreen = ({ navigation, route }) => {
         .from("user_likes")
         .insert([{ user_id: user.id, post_id: post.id }]);
 
-      const { error: err2 } = await supabase
-        .from("posts")
-        .update({ likes: post.likes + 1 })
-        .eq("id", post.id);
-
-      if (error || err2) {
+      if (error) {
         console.error("Error liking post:", error);
         Alert.alert("Error Occurred!", "Unable to Like Post. " + error.message);
         setIsLiked(!newLikedState);
-      } else {
-        console.log("Post liked");
+        return;
       }
+
+      console.log("Post liked");
     } else {
       // User unliked the post, remove from user_likes table
       const { error } = await supabase
@@ -110,22 +121,15 @@ const PostScreen = ({ navigation, route }) => {
         .eq("user_id", user.id)
         .eq("post_id", post.id);
 
-      const currentLikes = post.likes > 0 ? post.likes - 1 : 0;
-      const { error: err2 } = await supabase
-        .from("posts")
-        .update({ likes: currentLikes })
-        .eq("id", post.id);
-
-      if (error || err2) {
+      if (error) {
         console.error("Error unliking post:", error);
         Alert.alert(
           "Error Occurred!",
           "Unable to Unlike Post. " + error.message
         );
         setIsLiked(!newLikedState); // Revert state if there was an error
-      } else {
-        console.log("Post unliked");
       }
+      console.log("Post unliked");
     }
   };
 
@@ -255,14 +259,20 @@ const PostScreen = ({ navigation, route }) => {
     <ScrollView style={{ backgroundColor: "#000" }}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Image
-            style={styles.avatar}
-            source={{
-              uri:
-                post.user.avatar_url ||
-                "https://w7.pngwing.com/pngs/505/761/png-transparent-login-computer-icons-avatar-icon-monochrome-black-silhouette-thumbnail.png",
-            }}
-          />
+          <Pressable
+            onPress={() =>
+              navigation.navigate("profile", { userID: post.user.id })
+            }
+          >
+            <Image
+              style={styles.avatar}
+              source={{
+                uri:
+                  post.user.avatar_url ||
+                  "https://w7.pngwing.com/pngs/505/761/png-transparent-login-computer-icons-avatar-icon-monochrome-black-silhouette-thumbnail.png",
+              }}
+            />
+          </Pressable>
           <Text style={{ color: "#EEEEEE" }}>{post.user.username}</Text>
         </View>
         <View>
@@ -324,7 +334,7 @@ const PostScreen = ({ navigation, route }) => {
           />
         </View>
         <View style={{ paddingHorizontal: 10 }}>
-          <Text style={{ color: "#ccc" }}>{post.likes} likes</Text>
+          <Text style={{ color: "#ccc" }}>{totalLikes} likes</Text>
           <Text style={{ color: "#ccc9" }}>{post.caption}</Text>
         </View>
       </View>

@@ -19,6 +19,9 @@ const ProfileScreen = ({ navigation, route }) => {
   const [userInfo, setUserInfo] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [following, setFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -79,8 +82,49 @@ const ProfileScreen = ({ navigation, route }) => {
           setPosts(posts);
         }
 
+        if (route.params?.userID) {
+          const user = (await supabase.auth.getUser()).data.user;
+          const { data, error } = await supabase
+            .from("follows")
+            .select("*")
+            .eq("follower_id", user.id)
+            .eq("following_id", userID);
+          if (error) {
+            console.error("Error fetching follow information: ", error);
+          } else if (data.length > 0) {
+            setFollowing(true);
+          }
+        }
+
         console.log(data);
         console.log(posts);
+
+        // Get followers count
+        let { count: fetchedFollowersCount, error: errorGetFollowers } =
+          await supabase
+            .from("follows")
+            .select("*", { count: "estimated", head: true })
+            .eq("following_id", userID);
+        console.log(fetchedFollowersCount);
+
+        if (errorGetFollowers) {
+          throw errorGetFollowers;
+        } else if (fetchedFollowersCount > 0) {
+          setFollowersCount(fetchedFollowersCount);
+        }
+
+        // Get following count
+        let { count: fetchedFollowingCount, error: errorGetFollowing } =
+          await supabase
+            .from("follows")
+            .select("*", { count: "estimated", head: true })
+            .eq("follower_id", userID);
+
+        if (errorGetFollowing) {
+          throw errorGetFollowing;
+        } else if (followingCount > 0) {
+          setFollowingCount(fetchedFollowingCount);
+        }
       } catch (e) {
         Alert.alert(
           "Error Occurred!",
@@ -90,7 +134,7 @@ const ProfileScreen = ({ navigation, route }) => {
       }
     };
 
-    fetchDetails().then(() => setLoading(false));
+    fetchDetails().finally(() => setLoading(false));
   }, []);
 
   const dummyPFP =
@@ -98,6 +142,55 @@ const ProfileScreen = ({ navigation, route }) => {
 
   const openWebpage = async () => {
     await WebBrowser.openBrowserAsync("https://google.com");
+  };
+
+  const followUser = async () => {
+    const user = (await supabase.auth.getUser()).data.user;
+    if (following) {
+      const { error } = await supabase
+        .from("follows")
+        .delete()
+        .eq("follower_id", user.id)
+        .eq("following_id", userInfo.id);
+      if (error) {
+        console.error("Error unfollowing user: ", error);
+      } else {
+        console.log("User " + userInfo.id + " unfollowed successfully");
+        setFollowing(false);
+      }
+    } else {
+      const { error } = await supabase
+        .from("follows")
+        .insert({ follower_id: user.id, following_id: userInfo.id });
+
+      if (error) {
+        console.error("Error following user: ", error);
+      } else {
+        console.log("User " + userInfo.id + " followed successfully");
+        setFollowing(true);
+      }
+    }
+  };
+
+  const messageUser = async () => {
+    const user = (await supabase.auth.getUser()).data.user;
+    const { data: convo, error } = await supabase
+      .from("conversations")
+      .select("id")
+      .or(
+        `and(user1.eq.${userInfo.id},user2.eq.${user.id}),and(user1.eq.${user.id},user2.eq.${userInfo.id})`
+      );
+    if (error) {
+      console.error("Error occurred while fetching chat: ", error);
+      Alert.alert("Error Occurred!", `Unable to fetch chat: ${error}`);
+      return;
+    }
+
+    if (convo.length == 1) {
+      navigation.navigate("message", { convo_id: convo[0].id });
+    } else {
+      alert("Add chat with the user to message them"); // TODO: Add chat here using code
+    }
   };
 
   if (loading) {
@@ -123,7 +216,7 @@ const ProfileScreen = ({ navigation, route }) => {
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="#000" style="light" />
 
-      {/* PFP and Follow View */}
+      {/* PFP and Follow Data View */}
       <View
         style={{
           flexDirection: "row",
@@ -151,11 +244,11 @@ const ProfileScreen = ({ navigation, route }) => {
             <Text style={styles.countLabel}>posts</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={styles.count}>20</Text>
+            <Text style={styles.count}>{followersCount}</Text>
             <Text style={styles.countLabel}>followers</Text>
           </View>
           <View style={{ alignItems: "center" }}>
-            <Text style={styles.count}>30</Text>
+            <Text style={styles.count}>{followingCount}</Text>
             <Text style={styles.countLabel}>following</Text>
           </View>
         </View>
@@ -179,6 +272,34 @@ const ProfileScreen = ({ navigation, route }) => {
           Heyy, I'm using InstagramRN!
         </Text>
       </View>
+
+      {/* Follow and Message buttons */}
+      {route.params?.userID ? (
+        <View style={{ flexDirection: "row" }}>
+          <Text
+            onPress={followUser}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: "#56b0aa",
+              },
+            ]}
+          >
+            {following ? "Following" : "Follow"}
+          </Text>
+          <Text
+            onPress={messageUser}
+            style={[
+              styles.actionButton,
+              {
+                backgroundColor: "#5d6d6e",
+              },
+            ]}
+          >
+            Message
+          </Text>
+        </View>
+      ) : null}
 
       {/* Posts View */}
       <View style={{ paddingHorizontal: 10, marginTop: "8%", flex: 1 }}>
@@ -235,6 +356,7 @@ const ProfileScreen = ({ navigation, route }) => {
         )}
       </View>
 
+      {/* Signout button */}
       {route.params?.userID ? null : (
         <View style={styles.buttonContainer}>
           <Pressable
@@ -274,6 +396,15 @@ const styles = StyleSheet.create({
   countLabel: {
     color: "#EEEEEE",
     fontSize: 15,
+  },
+  actionButton: {
+    paddingHorizontal: 40,
+    paddingVertical: 13,
+    marginTop: 20,
+    marginLeft: 10,
+    color: "#EEEEEE",
+    borderRadius: 25,
+    fontWeight: "500",
   },
   signOutButton: {
     width: "90%",
