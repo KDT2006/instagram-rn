@@ -6,7 +6,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { FontAwesome, AntDesign } from "@expo/vector-icons";
 import ProfileScreen from "./screens/ProfileScreen";
 import { useEffect, useState } from "react";
-import AuthScreen from "./screens/AuthScreen";
 import { supabase } from "./supabase";
 import { Text, View } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
@@ -16,9 +15,21 @@ import ChatsScreen from "./screens/ChatsScreen";
 import MessageScreen from "./screens/MessageScreen";
 import PostScreen from "./screens/PostScreen";
 import UpdateProfileScreen from "./screens/UpdateProfileScreen";
+import SearchScreen from "./screens/SearchScreen";
+import SignInScreen from "./screens/SignInScreen";
+import SignUpScreen from "./screens/SignUpScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+const AuthStackNavigator = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="signin" component={SignInScreen} />
+      <Stack.Screen name="signup" component={SignUpScreen} />
+    </Stack.Navigator>
+  );
+};
 
 const HomeStackNavigator = ({ navigation }) => {
   return (
@@ -109,6 +120,40 @@ const HomeStackNavigator = ({ navigation }) => {
   );
 };
 
+const SearchStackNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="search"
+        component={SearchScreen}
+        options={{
+          title: "Search",
+          headerStyle: {
+            backgroundColor: "#000",
+          },
+          headerTintColor: "#EEEEEE",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
+      />
+      <Stack.Screen name="profile" component={ProfileScreen} />
+      <Stack.Screen
+        name="post"
+        component={PostScreen}
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#000",
+          },
+          headerTintColor: "#EEEEEE",
+          headerTitle: "Post",
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
+
 const NewPostStackNavigator = () => {
   return (
     <Stack.Navigator>
@@ -189,12 +234,23 @@ const MainTabsNavigator = () => {
         name="Home"
         component={HomeStackNavigator}
         options={{
-          headerTitle: "Feed",
-          headerTitleAlign: "center",
           tabBarIcon: ({ focused }) => (
             <Feather
               name="home"
               size={25}
+              color={focused ? "#EEEEEE" : "gray"}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Search"
+        component={SearchStackNavigator}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <AntDesign
+              name="search1"
+              size={26}
               color={focused ? "#EEEEEE" : "gray"}
             />
           ),
@@ -251,7 +307,7 @@ const Navigation = () => {
         {session && session.user ? (
           <Stack.Screen name="Main" component={MainTabsNavigator} />
         ) : (
-          <Stack.Screen name="Auth" component={AuthScreen} />
+          <Stack.Screen name="Auth" component={AuthStackNavigator} />
         )}
       </Stack.Navigator>
     </NavigationContainer>

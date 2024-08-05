@@ -36,13 +36,19 @@ const ChatsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={chats}
-        renderItem={({ item, index }) => (
-          <Chat key={index} chat={item} user={user} navigation={navigation} />
-        )}
-        contentContainerStyle={{ padding: 10 }}
-      />
+      {chats.length === 0 ? (
+        <Text style={{ color: "#EEEEEE", fontSize: 18, textAlign: "center" }}>
+          No chats, add one to get started
+        </Text>
+      ) : (
+        <FlatList
+          data={chats}
+          renderItem={({ item, index }) => (
+            <Chat key={index} chat={item} user={user} navigation={navigation} />
+          )}
+          contentContainerStyle={{ padding: 10 }}
+        />
+      )}
     </View>
   );
 };
@@ -53,5 +59,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000",
+    justifyContent: "center"
   },
 });

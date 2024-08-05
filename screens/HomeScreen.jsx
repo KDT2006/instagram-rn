@@ -24,7 +24,6 @@ import {
 } from "react-native-gesture-handler";
 import Comment from "../components/Comment";
 import { FontAwesome } from "@expo/vector-icons";
-import Animated from "react-native-reanimated";
 
 const HomeScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
@@ -135,6 +134,11 @@ const HomeScreen = ({ navigation }) => {
     supabase.auth.getUser().then((u) => setUser(u.data.user));
   }, []);
 
+  const SwipeRight = Gesture.Fling()
+    .direction(Directions.LEFT)
+    .onEnd(() => navigation.navigate("chat"))
+    .runOnJS(true);
+
   if (loading) {
     return (
       <View
@@ -156,31 +160,32 @@ const HomeScreen = ({ navigation }) => {
 
   if (posts.length === 0) {
     return (
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "row",
-          alignItems: "center",
-          backgroundColor: "#000",
-          padding: 20
-        }}
-      >
-        <Text style={{ fontSize: 18, color: "#EEEEEE", textAlign: "center" }}>
-          No posts, follow someone to view their posts
-        </Text>
-      </View>
+      <GestureHandlerRootView>
+        <GestureDetector gesture={SwipeRight}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "#000",
+              padding: 20,
+            }}
+          >
+            <Text
+              style={{ fontSize: 18, color: "#EEEEEE", textAlign: "center" }}
+            >
+              No posts, follow someone to view their posts
+            </Text>
+          </View>
+        </GestureDetector>
+      </GestureHandlerRootView>
     );
   }
-
-  const SwipeRight = Gesture.Fling()
-    .direction(Directions.LEFT)
-    .onEnd(() => navigation.navigate("chat"))
-    .runOnJS(true);
 
   return (
     <GestureHandlerRootView>
       <GestureDetector gesture={SwipeRight}>
-        <Animated.View style={styles.container}>
+        <View style={styles.container}>
           <StatusBar translucent backgroundColor="#000" />
           <FlatList
             data={posts}
@@ -196,108 +201,108 @@ const HomeScreen = ({ navigation }) => {
               />
             )}
           />
-          <GestureHandlerRootView>
-            {/* Comments Modal */}
-            <Modal
-              animationType="slide"
-              transparent={true}
-              visible={modalVisible}
-              onRequestClose={closeComments}
-            >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                  <Pressable onPress={closeComments} style={styles.closeButton}>
-                    <Text style={styles.closeButtonText}>Close</Text>
-                  </Pressable>
-                  {!comments || comments.length === 0 ? (
-                    <Text style={{ color: "#fff", alignSelf: "center" }}>
-                      No comments here!
-                    </Text>
-                  ) : (
-                    <FlatList
-                      data={comments}
-                      renderItem={({ item, index }) => (
-                        <Comment comment={item} user_id={user.id} key={index} />
-                      )}
-                    />
-                  )}
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 10,
-                      alignSelf: "center",
-                      marginTop: 10,
-                    }}
-                  >
-                    <TextInput
-                      value={newComment}
-                      onChangeText={setNewComment}
-                      placeholder="Add a comment..."
-                      placeholderTextColor="#000"
-                      style={{
-                        backgroundColor: "#EEEEEE",
-                        borderRadius: 20,
-                        paddingHorizontal: 10,
-                        paddingVertical: 5,
-                        color: "#000",
-                        flex: 1,
-                      }}
-                    />
-                    <TouchableOpacity onPress={postNewComment}>
-                      <FontAwesome name="send" size={21} color="#fff" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </Modal>
-
-            {/* Share Modal */}
-            <Modal
-              animationType="slide"
-              transparent={true}
-              visible={shareVisible}
-              onRequestClose={closeShare}
-            >
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                  <Pressable onPress={closeShare} style={styles.closeButton}>
-                    <Text style={styles.closeButtonText}>Close</Text>
-                  </Pressable>
+          {/* <GestureHandlerRootView> */}
+          {/* Comments Modal */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={closeComments}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Pressable onPress={closeComments} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </Pressable>
+                {!comments || comments.length === 0 ? (
+                  <Text style={{ color: "#fff", alignSelf: "center" }}>
+                    No comments here!
+                  </Text>
+                ) : (
                   <FlatList
-                    data={shareConvos}
-                    numColumns={3}
-                    renderItem={({ item, index }) => {
-                      const otherUser =
-                        item.user1.id === user.id ? item.user2 : item.user1;
-                      return (
-                        <Pressable
-                          onPress={() => handleSendPost(item.id)}
-                          key={index}
-                          style={{ gap: 5 }}
-                        >
-                          <Image
-                            source={{
-                              uri: otherUser.avatar_url,
-                            }}
-                            style={{
-                              width: 80,
-                              aspectRatio: 1 / 1,
-                              borderRadius: 50,
-                            }}
-                          />
-                          <Text style={{ color: "#fff" }}>
-                            {otherUser.full_name}
-                          </Text>
-                        </Pressable>
-                      );
+                    data={comments}
+                    renderItem={({ item, index }) => (
+                      <Comment comment={item} user_id={user.id} key={index} />
+                    )}
+                  />
+                )}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                    alignSelf: "center",
+                    marginTop: 10,
+                  }}
+                >
+                  <TextInput
+                    value={newComment}
+                    onChangeText={setNewComment}
+                    placeholder="Add a comment..."
+                    placeholderTextColor="#000"
+                    style={{
+                      backgroundColor: "#EEEEEE",
+                      borderRadius: 20,
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      color: "#000",
+                      flex: 1,
                     }}
                   />
+                  <TouchableOpacity onPress={postNewComment}>
+                    <FontAwesome name="send" size={21} color="#fff" />
+                  </TouchableOpacity>
                 </View>
               </View>
-            </Modal>
-          </GestureHandlerRootView>
-        </Animated.View>
+            </View>
+          </Modal>
+
+          {/* Share Modal */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={shareVisible}
+            onRequestClose={closeShare}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Pressable onPress={closeShare} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </Pressable>
+                <FlatList
+                  data={shareConvos}
+                  numColumns={3}
+                  renderItem={({ item, index }) => {
+                    const otherUser =
+                      item.user1.id === user.id ? item.user2 : item.user1;
+                    return (
+                      <Pressable
+                        onPress={() => handleSendPost(item.id)}
+                        key={index}
+                        style={{ gap: 5 }}
+                      >
+                        <Image
+                          source={{
+                            uri: otherUser.avatar_url,
+                          }}
+                          style={{
+                            width: 80,
+                            aspectRatio: 1 / 1,
+                            borderRadius: 50,
+                          }}
+                        />
+                        <Text style={{ color: "#fff" }}>
+                          {otherUser.full_name}
+                        </Text>
+                      </Pressable>
+                    );
+                  }}
+                />
+              </View>
+            </View>
+          </Modal>
+          {/* </GestureHandlerRootView> */}
+        </View>
       </GestureDetector>
     </GestureHandlerRootView>
   );

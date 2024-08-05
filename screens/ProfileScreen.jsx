@@ -105,7 +105,7 @@ const ProfileScreen = ({ navigation, route }) => {
             .from("follows")
             .select("*", { count: "estimated", head: true })
             .eq("following_id", userID);
-        console.log(fetchedFollowersCount);
+        // console.log(fetchedFollowersCount);
 
         if (errorGetFollowers) {
           throw errorGetFollowers;
@@ -259,7 +259,7 @@ const ProfileScreen = ({ navigation, route }) => {
         <Text style={{ color: "#EEEEEE", fontWeight: "500", marginBottom: 3 }}>
           {userInfo.full_name}
         </Text>
-        <Text
+        {userInfo.website ? <Text
           numberOfLines={1}
           style={{ color: "#EEEEEE", fontWeight: "400", marginBottom: 5 }}
         >
@@ -267,7 +267,7 @@ const ProfileScreen = ({ navigation, route }) => {
           <Text style={{ color: "#758694" }} onPress={openWebpage}>
             {userInfo.website}
           </Text>
-        </Text>
+        </Text> : null}
         <Text style={{ color: "#EEEEEE", fontWeight: "400" }}>
           Heyy, I'm using InstagramRN!
         </Text>
