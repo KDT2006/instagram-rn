@@ -18,6 +18,7 @@ import { supabase } from "../supabase";
 import { Video } from "expo-av";
 import { AntDesign, Ionicons, Feather, FontAwesome } from "@expo/vector-icons";
 import Comment from "../components/Comment";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 const PostScreen = ({ navigation, route }) => {
   const [post, setPost] = useState(null);
@@ -33,6 +34,16 @@ const PostScreen = ({ navigation, route }) => {
   const [totalLikes, setTotalLikes] = useState(0);
 
   const post_id = route.params.post_id;
+
+  const player = useVideoPlayer(
+    post?.media_type === "video" ? post.media : null,
+    (player) => {
+      if (player) {
+        player.loop = false;
+        player.play();
+      }
+    }
+  );
 
   const fetchPost = async () => {
     const { data: postData, error } = await supabase
@@ -286,15 +297,9 @@ const PostScreen = ({ navigation, route }) => {
               }}
             />
           ) : post.media_type === "video" ? (
-            <Video
+            <VideoView
+              player={player}
               style={{ width: "100%", aspectRatio: 3 / 3.5 }}
-              source={{
-                uri:
-                  post.media ||
-                  "https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4",
-              }}
-              useNativeControls
-              resizeMode="contain"
             />
           ) : null}
         </View>

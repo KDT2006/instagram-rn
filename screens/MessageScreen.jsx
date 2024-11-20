@@ -232,6 +232,31 @@ const MessageScreen = ({ navigation, route }) => {
     }
   };
 
+  const MessageInput = () => {
+    return (
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          value={newMessage}
+          onChangeText={setNewMessage}
+          placeholder="Type a message..."
+          placeholderTextColor="#888"
+          multiline
+        />
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          {newMessage === "" ? (
+            <TouchableOpacity onPress={pickImage}>
+              <Ionicons name="document" size={24} color="#fff" />
+            </TouchableOpacity>
+          ) : null}
+          <TouchableOpacity onPress={sendMessage}>
+            <FontAwesome name="send" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   if (loading) {
     return (
       <View
@@ -253,7 +278,16 @@ const MessageScreen = ({ navigation, route }) => {
           { alignItems: "center", justifyContent: "center" },
         ]}
       >
-        <Text style={{ color: "#fff", fontSize: 20 }}>Start Chatting!</Text>
+        <Text style={{ color: "#fff", fontSize: 20, flex: 1 }}>
+          Start Chatting!
+        </Text>
+        {image ? (
+          <Image
+            source={{ uri: image.uri }}
+            style={{ width: "100%", aspectRatio: 16 / 9 }}
+          />
+        ) : null}
+        <MessageInput />
       </View>
     );
   }
@@ -273,26 +307,7 @@ const MessageScreen = ({ navigation, route }) => {
           style={{ width: "100%", aspectRatio: 16 / 9 }}
         />
       ) : null}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={newMessage}
-          onChangeText={setNewMessage}
-          placeholder="Type a message..."
-          placeholderTextColor="#888"
-          multiline
-        />
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          {newMessage === "" ? (
-            <TouchableOpacity onPress={pickImage}>
-              <Ionicons name="document" size={24} color="#fff" />
-            </TouchableOpacity>
-          ) : null}
-          <TouchableOpacity onPress={sendMessage}>
-            <FontAwesome name="send" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <MessageInput />
     </View>
   );
 };

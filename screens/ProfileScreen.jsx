@@ -14,6 +14,8 @@ import { supabase } from "../supabase";
 import { FontAwesome } from "@expo/vector-icons";
 import { Video } from "expo-av";
 import * as WebBrowser from "expo-web-browser";
+import { useVideoPlayer, VideoView } from "expo-video";
+import VideoWrapper from "../components/VideoWrapper";
 
 const ProfileScreen = ({ navigation, route }) => {
   const [userInfo, setUserInfo] = useState(null);
@@ -189,7 +191,20 @@ const ProfileScreen = ({ navigation, route }) => {
     if (convo.length == 1) {
       navigation.navigate("message", { convo_id: convo[0].id });
     } else {
-      alert("Add chat with the user to message them"); // TODO: Add chat here using code
+      // TODO: Add chat here using code
+      const { data, error } = await supabase
+        .from("conversations")
+        .insert({ user1: user.id, user2: userInfo.id })
+        .select()
+        .single();
+
+      if (error) {
+        console.error(error);
+        Alert.alert("Error Occurred!", "Unable to add chat with user");
+        return;
+      }
+
+      navigation.navigate("message", { convo_id: data });
     }
   };
 
@@ -259,15 +274,17 @@ const ProfileScreen = ({ navigation, route }) => {
         <Text style={{ color: "#EEEEEE", fontWeight: "500", marginBottom: 3 }}>
           {userInfo.full_name}
         </Text>
-        {userInfo.website ? <Text
-          numberOfLines={1}
-          style={{ color: "#EEEEEE", fontWeight: "400", marginBottom: 5 }}
-        >
-          Website: {""}
-          <Text style={{ color: "#758694" }} onPress={openWebpage}>
-            {userInfo.website}
+        {userInfo.website ? (
+          <Text
+            numberOfLines={1}
+            style={{ color: "#EEEEEE", fontWeight: "400", marginBottom: 5 }}
+          >
+            Website: {""}
+            <Text style={{ color: "#758694" }} onPress={openWebpage}>
+              {userInfo.website}
+            </Text>
           </Text>
-        </Text> : null}
+        ) : null}
         <Text style={{ color: "#EEEEEE", fontWeight: "400" }}>
           Heyy, I'm using InstagramRN!
         </Text>
@@ -340,12 +357,10 @@ const ProfileScreen = ({ navigation, route }) => {
                         }}
                       />
                     ) : item.media_type === "video" ? (
-                      <Video
-                        style={{ width: "100%", height: "100%" }}
-                        source={{
-                          uri: item.media,
-                        }}
-                        resizeMode="contain"
+                      <VideoWrapper
+                        media={item.media}
+                        viewStyle={{ width: "100%", height: "100%" }}
+                        key={index}
                       />
                     ) : null}
                   </View>

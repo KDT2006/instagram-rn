@@ -46,14 +46,14 @@ const HomeStackNavigator = ({ navigation }) => {
               </Text>
             </View>
           ),
-          headerRight: (props) => (
-            <Ionicons
-              name="chatbubble-outline"
-              size={24}
-              color="#EEEEEE"
-              onPress={() => navigation.navigate("chat")}
-            />
-          ),
+          // headerRight: (props) => (
+          //   <Ionicons
+          //     name="chatbubble-outline"
+          //     size={24}
+          //     color="#EEEEEE"
+          //     onPress={() => navigation.navigate("chat")}
+          //   />
+          // ),
           headerStyle: {
             backgroundColor: "#000",
           },

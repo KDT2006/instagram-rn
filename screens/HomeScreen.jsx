@@ -13,7 +13,7 @@ import {
   View,
   TextInput,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import Post from "../components/Post";
 import { supabase } from "../supabase";
 import {
@@ -23,7 +23,7 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import Comment from "../components/Comment";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 
 const HomeScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
@@ -132,6 +132,19 @@ const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     fetchPosts().then(() => setLoading(false));
     supabase.auth.getUser().then((u) => setUser(u.data.user));
+  }, []);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: (props) => (
+        <Ionicons
+          name="chatbubble-outline"
+          size={24}
+          color="#EEEEEE"
+          onPress={() => navigation.navigate("chat")}
+        />
+      ),
+    });
   }, []);
 
   const SwipeRight = Gesture.Fling()
